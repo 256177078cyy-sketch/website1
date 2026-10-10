@@ -1,508 +1,56 @@
 <!doctype html>
-<html lang="zh-CN">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>10倍速学习闭环</title>
-  <style>
-    :root {
-      --bg: #f6f7f9;
-      --panel: #ffffff;
-      --ink: #17202a;
-      --muted: #5c6673;
-      --line: #dfe3e8;
-      --accent: #d97706;
-      --accent-soft: #fff2e2;
-      --good: #16a34a;
-      --bad: #dc2626;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink);
-      font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-      line-height: 1.6;
-    }
-    .shell {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 28px 20px 64px;
-    }
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 18px;
-      align-items: end;
-      justify-content: space-between;
-      margin-bottom: 24px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 30px;
-      letter-spacing: 0;
-      line-height: 1.2;
-    }
-    .sub { color: var(--muted); margin-top: 6px; }
-    .topic {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-width: 300px;
-      flex: 1;
-      max-width: 480px;
-    }
-    label {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-    input, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fff;
-      color: var(--ink);
-      padding: 12px;
-      font: inherit;
-      resize: vertical;
-    }
-    textarea { min-height: 180px; }
-    .steps {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 6px;
-      margin-bottom: 20px;
-      scrollbar-width: thin;
-    }
-    .step-chip {
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 8px 14px;
-      white-space: nowrap;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .step-chip.active {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      color: #7a3c00;
-    }
-    .step-chip.done { color: #046c3d; border-color: #b7e4c7; }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 18px;
-    }
-    .step-head {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 14px;
-    }
-    .step-title {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 0;
-    }
-    .step-purpose { color: var(--muted); margin-top: 6px; }
-    .pill {
-      font-size: 12px;
-      font-weight: 700;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 12px;
-      color: var(--muted);
-    }
-    .pill.active {
-      border-color: var(--accent);
-      color: #7a3c00;
-      background: var(--accent-soft);
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      align-items: start;
-    }
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-    }
-    button {
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--ink);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button.primary {
-      background: #17202a;
-      border-color: #17202a;
-      color: #fff;
-    }
-    button.ghost {
-      background: transparent;
-      font-weight: 600;
-    }
-    button.danger {
-      color: var(--bad);
-      border-color: #f3b6b6;
-      background: #fff;
-    }
-    button.done {
-      background: #16a34a;
-      border-color: #16a34a;
-      color: #fff;
-    }
-    .progress {
-      height: 6px;
-      background: #e5e7eb;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-bottom: 18px;
-    }
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-      transition: width .2s ease;
-    }
-    .footer-tools {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: space-between;
-      margin-top: 8px;
-    }
-    .hint {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 8px;
-    }
-    .small-note {
-      font-size: 13px;
-      color: var(--muted);
-    }
-    @media (max-width: 760px) {
-      h1 { font-size: 24px; }
-      .grid { grid-template-columns: 1fr; }
-      .shell { padding: 20px 14px 48px; }
-      .topic { max-width: none; }
-    }
-  </style>
-</head>
-<body>
-  <div class="shell">
-    <header>
-      <div>
-        <h1>10倍速学习闭环</h1>
-        <div class="sub">输入主题，按顺序完成十步。每一步都可以复制提示词，把结果贴回来保存。</div>
-      </div>
-      <div class="topic">
-        <label for="topic">学习主题</label>
-        <input id="topic" placeholder="例如：用 RAG 构建知识库" />
-        <button class="primary" id="apply-topic">应用到全部提示词</button>
-      </div>
-    </header>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>学习项目工作台</title><style>
+:root{--bg:#f4f6f8;--panel:#fff;--ink:#17202a;--muted:#667085;--line:#d8dee7;--blue:#2563eb;--blue2:#eff6ff;--green:#0f9f6e;--red:#b42318;--shadow:0 10px 28px rgba(16,24,40,.08)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px}button.primary{background:var(--blue);border-color:var(--blue);color:#fff}button.good{background:var(--green);border-color:var(--green);color:#fff}.app{min-height:100vh}.top{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line)}.top-inner{max-width:1320px;margin:auto;padding:14px 20px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}.brand{font-weight:800;display:flex;align-items:center;gap:9px}.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--blue)}.btns{display:flex;gap:8px;flex-wrap:wrap}.main{max-width:1320px;margin:auto;padding:24px 20px}.hero{background:linear-gradient(135deg,#fff,#f8fbff);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:24px;margin-bottom:18px}.grid{display:grid;grid-template-columns:minmax(280px,340px) 1fr;gap:18px;align-items:start}.home{grid-column:1/-1}.panel{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:16px;padding:18px}.side{position:sticky;top:78px}.side h3{margin:0 0 10px}.project-list{display:grid;gap:8px;max-height:560px;overflow:auto}.item{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;text-align:left;width:100%}.item.active{border-color:var(--blue);background:var(--blue2)}.muted{color:var(--muted)}.small{font-size:12px}.progress{height:8px;background:#eef2f6;border-radius:99px;overflow:hidden}.progress span{display:block;height:100%;background:var(--green);width:0}.empty{border:1px dashed #cfd7e3;border-radius:12px;padding:18px;color:var(--muted);text-align:center}.steps{display:grid;gap:12px}.step{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.step.done{border-color:#abefc6;background:#f7fffb}.step.current{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.10)}.stepHead{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}.stepTitle{font-weight:800}.tag{border-radius:999px;padding:3px 8px;background:#f2f4f7;color:#475467;font-size:12px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.fields.one{grid-template-columns:1fr}.field{display:grid;gap:6px}.field label{font-size:12px;color:var(--muted);font-weight:700}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px;background:#fff;min-height:38px}.field textarea{min-height:110px;resize:vertical}.materialGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.material{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}.material img{width:100%;height:104px;object-fit:cover;background:#f2f4f7}.materialBody{padding:9px}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}.outbox{white-space:pre-wrap;background:#0f172a;color:#e5e7eb;border-radius:12px;padding:14px;overflow:auto;max-height:70vh}footer{text-align:center;color:var(--muted);padding:24px}@media(max-width:980px){.grid{grid-template-columns:1fr}.side{position:static}.fields{grid-template-columns:1fr}}</style></head><body><div class="app"><header class="top"><div class="top-inner"><div><div class="brand"><span class="dot"></span>学习项目工作台</div><div class="muted small">可持续学习平台：10步闭环 · 资料库 · 疑问复盘 · 最终速查表</div></div><div class="btns"><button id="newBtn" class="primary">新建项目</button><button id="exportJsonBtn">备份 JSON</button><button id="exportMdBtn">导出 Markdown</button><button id="exportHtmlBtn">导出 HTML</button><button id="importBtn">导入备份</button><input id="importInput" type="file" accept=".json" hidden></div></div></header><main class="main"><section class="hero home" id="home"><h1>我的学习项目</h1><p class="muted">每个项目都会记录日期、进度、十步学习流程、上传资料、疑问、待补研、最终报告和最终速查表。数据保存在浏览器 localStorage 中，可随时导出备份。</p><div class="btns"><button id="newBtn2" class="primary">开始新的学习项目</button></div></section><section class="grid" id="workspace" hidden><aside class="side panel"><div class="fields one"><div class="field"><label>项目名称</label><input id="projectName" placeholder="例如：外贸CRM获客平台"></div><div class="field"><label>标签</label><input id="projectTags" placeholder="逗号分隔"></div><div class="field"><label>状态</label><select id="projectStatus"><option>未开始</option><option>进行中</option><option>暂停</option><option>待补研</option><option>已完成</option></select></div><div class="field"><label>当前步骤</label><select id="currentStep"></select></div></div><h3>我的学习项目</h3><div id="projectList" class="project-list"></div></aside><section class="side-content panel"><div class="tabs"><button class="primary" data-tab="steps">十步流程</button><button data-tab="materials">资料库</button><button data-tab="report">最终文档</button><button data-tab="notes">疑问/待补研</button></div><div id="tabSteps" class="tabpane"><div class="fields"><div class="field"><label>开始日期</label><input id="startDate" type="date"></div><div class="field"><label>最近更新日期</label><input id="lastUpdated" type="date"></div><div class="field"><label>进度</label><input id="progress" type="range" min="0" max="100" value="0"><span id="progressText" class="small"></span></div></div><div class="steps" id="steps"></div></div><div id="tabMaterials" class="tabpane" hidden><div class="fields"><div class="field"><label>上传资料</label><input id="fileInput" type="file" accept=".md,.txt,.docx,.pdf,.png,.jpg,.jpeg" multiple></div><div class="field"><label>资料说明</label><input id="materialNote" placeholder="可选"></div></div><div id="materials" class="materialGrid"></div></div><div id="tabReport" class="tabpane" hidden><div class="fields one"><div class="field"><label>最终学习文档</label><textarea id="report" placeholder="这里汇总全书/全项目理解，并自动生成目录大纲和最终速查表"></textarea></div></div><button id="generateBtn" class="good">生成最终文档与最终速查表</button><div id="output" class="outbox">还没有生成文档。</div><button id="copyBtn" class="primary">复制生成结果</button></div><div id="tabNotes" class="tabpane" hidden><div class="fields one"><div class="field"><label>疑问 / 后续复盘 / 一眼回忆入口</label><textarea id="notes" placeholder="写清楚：哪里产生疑问、后续要补什么、以后从哪里继续看"></textarea></div></div><button id="saveNotesBtn" class="good">保存疑问与复盘</button></div></section></section><footer>本地保存 · 支持 Markdown / HTML / JSON 导出 · 支持 txt/md/docx/pdf/图片资料入库</footer></main></div><script>
+const STEP_DEFS=[["01","主题定位","这个项目要解决什么问题？"],["02","知识地图","先画知识结构"],["03","原文提取","上传资料或粘贴原文"],["04","概念拆解","拆成可解释卡片"],["05","案例映射","用项目场景验证"],["06","疑问记录","写成明确问题"],["07","补研验证","补资料、补案例、补反证"],["08","复盘笔记","写能回看的理解"],["09","最终报告","汇总为完整文档"],["10","最终速查表","做成下次能直接查的清单"]];
+const K='learning-workbench-v1';
+const $=s=>document.querySelector(s); let state={projects:[],currentId:null};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const now=()=>new Date().toISOString().slice(0,10);
+function blankProject(name){return{id:uid(),name:name||'新的学习项目',tags:[],status:'进行中',currentStep:1,progress:1,startDate:now(),lastUpdated:now(),materials:[],steps:STEP_DEFS.map(()=>({content:''})),report:'',notes:'',createdAt:now()}}
+function save(){localStorage.setItem(K,JSON.stringify(state))}
+function load(){try{state=JSON.parse(localStorage.getItem(K)||'null')||state}catch(e){} if(!state.projects.length)state.projects=[blankProject('示例：学习项目工作台')]; if(!state.currentId)state.currentId=state.projects[0].id; if(!state.projects.find(p=>p.id===state.currentId))state.currentId=state.projects[0].id}
+function cur(){return state.projects.find(p=>p.id===state.currentId)}
+function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function render(){save(); const p=cur(); $('#home').hidden=!!p; $('#workspace').hidden=!p; if(!p)return; $('#projectName').value=p.name; $('#projectTags').value=p.tags.join(', '); $('#projectStatus').value=p.status; $('#currentStep').innerHTML=STEP_DEFS.map((s,i)=>'<option value="'+(i+1)+'" '+(i+1===p.currentStep?'selected':'')+'>'+s[0]+' '+esc(s[1])+'</option>').join(''); $('#startDate').value=p.startDate; $('#lastUpdated').value=p.lastUpdated; $('#progress').value=p.progress; $('#progressText').textContent=p.progress+'%'; $('#report').value=p.report; $('#notes').value=p.notes; $('#steps').innerHTML=STEP_DEFS.map((s,i)=>{const idx=i+1,done=idx<p.currentStep||p.progress===100,current=idx===p.currentStep;return '<article class="step '+(done?'done ':'')+(current?'current':'')+'"><div class="stepHead"><div class="stepTitle">'+s[0]+' '+esc(s[1])+'</div><div><span class="tag">'+esc(s[2])+'</span> <button data-step="'+idx+'">设为当前</button></div></div><textarea data-stepcontent="'+idx+'" placeholder="记录第'+idx+'步成果">'+esc(p.steps[i].content)+'</textarea></article>'}).join(''); $('#projectList').innerHTML=state.projects.map(pr=>'<button class="item '+(pr.id===p.id?'active':'')+'" data-open="'+pr.id+'"><b>'+esc(pr.name)+'</b><div class="muted small">'+esc(pr.startDate)+' → '+esc(pr.lastUpdated)+' · 第'+pr.currentStep+'步 · '+pr.progress+'%</div><div class="progress"><span style="width:'+pr.progress+'%"></span></div><div class="muted small">'+esc(pr.tags.join(' / '))+'</div></button>').join(''); renderMaterials()}
+function renderMaterials(){const p=cur(); if(!p)return; $('#materials').innerHTML=p.materials.length?p.materials.map((m,i)=>{const media=m.type&&m.type.indexOf('image/')===0?'<img src="'+m.dataUrl+'" alt="'+esc(m.name)+'">':'<div class="materialBody small muted">文件：'+esc(m.name)+'<br>'+((m.size/1024).toFixed(1))+' KB</div>';return '<div class="material">'+media+'<div class="materialBody"><b>'+esc(m.name)+'</b><div class="small muted">'+esc(m.date)+' · '+esc(m.note)+'</div><button data-material-delete="'+i+'">删除</button></div></div>'}).join(''):'<div class="empty">还没有资料，上传 txt/md/docx/pdf/图片后这里会显示。</div>'}
+function addProject(){const p=blankProject(); state.projects.unshift(p); state.currentId=p.id; render(); $('#projectName').focus()}
+function tab(name){['steps','materials','report','notes'].forEach(k=>{const id='tab'+k.charAt(0).toUpperCase()+k.slice(1); $('#'+id).hidden=(k!==name)})}
+function generate(){const p=cur(); const materials=p.materials.map(m=>'- '+m.date+'｜'+m.name+'｜'+(m.note||'无说明')).join('
+')||'- 暂无'; const questions=p.notes.split('
+').filter(Boolean).map(x=>'- '+x).join('
+')||'- 暂无'; p.report='# '+p.name+'
 
-    <div class="progress"><div class="progress-fill" id="progress"></div></div>
-    <div class="steps" id="steps"></div>
-    <main id="main"></main>
+## 1. 项目信息
+- 开始日期：'+p.startDate+'
+- 最近更新：'+p.lastUpdated+'
+- 状态：'+p.status+'
+- 当前进度：'+p.progress+'%
+- 标签：'+(p.tags.join(' / ')||'暂无')+'
 
-    <div class="card">
-      <div class="small-note">所有内容都保存在本机浏览器里。你可以导出一份 Markdown 工作本，方便复盘或交给别人看。</div>
-      <div class="footer-tools">
-        <div class="btn-row">
-          <button id="export-md">导出 Markdown</button>
-          <button id="export-json">导出 JSON</button>
-          <button class="danger" id="reset">清空</button>
-        </div>
-        <div class="small-note" id="saved-at"></div>
-      </div>
-    </div>
-  </div>
+## 2. 目录大纲
+'+STEP_DEFS.map(s=>'- '+s[0]+' '+s[1]).join('
+')+'
 
-<script>
-const steps = [
-  {
-    id: 1,
-    title: "五视角调研",
-    purpose: "把一个领域从实践者、学者、怀疑者、经济学家、历史学家的角度拆开，避免只听到最常见的观点。",
-    guide: [
-      "每位专家都要给核心立场、最强证据、只有他会说的一件事。",
-      "这一步的目的不是找答案，而是把领域从不同方向撕开。",
-      "可以用 AI 分批生成，也可以让它一次性给五份解读。"
-    ],
-    prompt: (t) => `我想研究【${t}】。请模拟 5 位不同的专家，从各自的视角分析这个主题：实践者、学者、怀疑者、经济学家、历史学家。每位专家请给出：1）两句话的核心立场；2）支持观点的最强证据；3）一件只有这个视角会提、其他视角不会提的事。`
-  },
-  {
-    id: 2,
-    title: "矛盾图谱",
-    purpose: "让五个视角互相质疑，找出冲突、共识和盲区，把研究从浅层信息推进到结构化理解。",
-    guide: [
-      "重点找谁和谁冲突、依据是什么。",
-      "标记最强证据、最弱证据和可被化解的关键问题。",
-      "共识点更可靠，盲区点往往更有价值。"
-    ],
-    prompt: (t) => `基于上一步的 5 个视角，请为【${t}】画一张矛盾图谱：1）哪些视角直接冲突，依据是什么；2）谁证据最强、谁证据最弱，为什么；3）哪个问题一旦有答案就能化解最大分歧；4）所有视角都同意的是哪一点；5）所有视角都没提到的是哪一点。`
-  },
-  {
-    id: 3,
-    title: "综合简报",
-    purpose: "把前面的多视角分析和矛盾图压成一份可以行动的调研简报。",
-    guide: [
-      "一段话总结：给只有 60 秒的决策者听。",
-      "关键发现要按可信度排序，并标注支持与反对的视角。",
-      "最后一定要落到一条具体行动和一个前沿问题。"
-    ],
-    prompt: (t) => `请把 5 个视角和矛盾图谱整合成一份关于【${t}】的调研简报：1）60 秒摘要；2）5 个关键发现，按可靠性排序，并标注支持与反对视角；3）一个只有跨视角才能看到的隐藏关联；4）一条具体行动建议；5）一个会改变整体理解的前沿问题。`
-  },
-  {
-    id: 4,
-    title: "同行评审自检",
-    purpose: "让 AI 对自己的简报挑刺，找出证据弱、视角失衡、需要补充信息的部分。",
-    guide: [
-      "给关键发现逐个打分。",
-      "明确说出最没把握的结论和需要验证的信息。",
-      "检查是否需要补第 6 个视角。"
-    ],
-    prompt: (t) => `请对关于【${t}】的调研简报做同行评审：给 5 个关键发现各打 1-10 分并解释理由；指出最没把握的结论、需要什么信息才能验证它；指出哪个视角占比过高；判断是否该加入第 6 个视角；最后给出一个专家视角的修改建议。`
-  },
-  {
-    id: 5,
-    title: "资源筛选",
-    purpose: "从大量资料里只留 5 个最值得用的资源，排成一周能走完的学习路径。",
-    guide: [
-      "不要收藏，先看能不能用。",
-      "每个资源说明为什么强、怎么读/看/练、要多久。",
-      "排除被高估的资源，减少收藏吃灰。"
-    ],
-    prompt: (t) => `关于【${t}】，请当我的策展人：从海量资源里只挑 5 个最值得用的，说明它为什么比同类强、该怎么用、大概要花多久、我能从中拿走的一个关键点；再列出被高估的资源或坑；最后排成一条一周能走完的学习路径。`
-  },
-  {
-    id: 6,
-    title: "学习阶梯",
-    purpose: "把主题拆成 5 个清晰难度，知道自己现在在哪、下一步去哪。",
-    guide: [
-      "从完全初学者到自信实践者。",
-      "每一级都要有掌握标准、里程碑和自测。",
-      "避免跳级学，减少挫败感。"
-    ],
-    prompt: (t) => `我想一步步学【${t}】，不跳过重要基础。请把主题分成 5 个清晰难度：完全初学者、基本理解、实际使用者、问题解决者、自信实践者。每个级别给出：级别名称、这个阶段该理解什么、掌握标准、重点概念或技能、里程碑、一个动手练习、常见错误、进入下一级前的自测问题。`
-  },
-  {
-    id: 7,
-    title: "核心 20% 课表",
-    purpose: "找出能带来 80% 效果的 20% 核心，做成 10 次课，先能上手干活。",
-    guide: [
-      "每次课都要有目标、练习、资源和复习题。",
-      "重点是能上手，不是全面覆盖。",
-      "最后要有一个最小项目证明你真的会用。"
-    ],
-    prompt: (t) => `我想用 2 小时学【${t}】。请先找出能带来 80% 实际效果的那 20% 核心概念和技能，解释为什么它们是核心；再排成 10 次课，每次包含学习目标、关键概念、动手练习、推荐资源、完成后预期结果和 5 个复习题；最后给一个能证明我会上手的最小项目。`
-  },
-  {
-    id: 8,
-    title: "严格测试",
-    purpose: "用主动回忆暴露理解边界，把“看起来懂了”变成“真的会用”。",
-    guide: [
-      "10 题从初级到专家级，一次只问一题。",
-      "答完后打分、指出错处、重新解释。",
-      "答得弱就追问，答得好就加难度。"
-    ],
-    prompt: (t) => `我刚学完【${t}】，想测试自己到底理解了多少。请你扮演一位严格但乐于助人的考官：从 10 个问题开始，一次只问一个；问题从初级到专家级逐渐变难；每个回答后给出 0-10 分、答对的部分、确切差距、以及用简单语言重新解释；最后给我最终得分、强项、弱项、复习计划和 5 个挑战题。`
-  },
-  {
-    id: 9,
-    title: "费曼循环",
-    purpose: "用自己的话讲清楚，把讲不明白的地方磨到简单、准确、完整。",
-    guide: [
-      "先用 12 岁能懂的语言讲一遍。",
-      "再让我复述，找出含糊、跳步、绕不过去的地方。",
-      "循环到我能独立讲清，不进新内容。"
-    ],
-    prompt: (t) => `我想用费曼学习法吃透【${t}】里的一个概念。请你当有耐心的学习伙伴：先用简单词和生活例子讲给我听，就当我 12 岁；然后让我用自己的话复述；再指出我复述里每一个含糊、跳步、绕不过去的地方，只重教这些部分；然后让我再讲一遍，循环到我的解释简单、准确、完整。在我讲清楚之前，不要进新内容。`
-  },
-  {
-    id: 10,
-    title: "一页速查表",
-    purpose: "把学过的内容压缩成能用 5 分钟复习的一页纸，方便随时调取。",
-    guide: [
-      "一句大白话定义。",
-      "重要概念、规则、公式或步骤，全用短条目。",
-      "3-5 个真实场景例子和 5 个快问快答。"
-    ],
-    prompt: (t) => `请给我做一份关于【${t}】的一页速查表：一句大白话定义；最重要的概念、规则、公式或步骤；3-5 个真实场景的例子；新手最容易犯的错和最容易混淆的地方；一份“上场前”检查清单；最后加 5 个快问快答。`
-  }
-];
+## 3. 资料库
+'+materials+'
 
-const state = { topic: "", outputs: {}, done: {}, current: 1 };
-const el = (id) => document.getElementById(id);
+## 4. 十步学习过程
+'+STEP_DEFS.map((s,i)=>'### '+s[0]+' '+s[1]+'
+'+(p.steps[i].content||'待补充')).join('
 
-function loadState() {
-  try {
-    const raw = localStorage.getItem("tenx-learning");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      state.topic = parsed.topic || "";
-      state.outputs = parsed.outputs || {};
-      state.done = parsed.done || {};
-      state.current = parsed.current || 1;
-    }
-  } catch (e) { console.warn("读取本地记录失败", e); }
-  el("topic").value = state.topic;
-}
+')+'
 
-function saveState() {
-  const savedAt = new Date().toLocaleString("zh-CN");
-  el("saved-at").textContent = `保存时间：${savedAt}`;
-  localStorage.setItem("tenx-learning", JSON.stringify(state));
-}
+## 5. 疑问与待补研
+'+questions+'
 
-function renderSteps() {
-  const wrap = el("steps");
-  wrap.innerHTML = "";
-  steps.forEach((s) => {
-    const b = document.createElement("button");
-    b.className = "step-chip" + (s.id === state.current ? " active" : "") + (state.done[s.id] ? " done" : "");
-    b.textContent = `${s.id}. ${s.title}`;
-    b.onclick = () => { state.current = s.id; saveState(); render(); };
-    wrap.appendChild(b);
-  });
-}
-
-function render() {
-  const s = steps.find((x) => x.id === state.current);
-  const main = el("main");
-  main.innerHTML = "";
-  const card = document.createElement("section");
-  card.className = "card";
-  card.innerHTML = `
-    <div class="step-head">
-      <div>
-        <h2 class="step-title">${s.id}. ${s.title}</h2>
-        <div class="step-purpose">${s.purpose}</div>
-      </div>
-      <div class="pill ${state.done[s.id] ? "done" : "active"}">${state.done[s.id] ? "已完成" : "进行中"}</div>
-    </div>
-    <ul class="guide">
-      ${s.guide.map((g) => `<li>${g}</li>`).join("")}
-    </ul>
-    <div class="grid">
-      <div class="field">
-        <label for="prompt">提示词</label>
-        <textarea id="prompt">${s.prompt(state.topic || "主题")}</textarea>
-      </div>
-      <div class="field">
-        <label for="output">我的成果</label>
-        <textarea id="output" placeholder="把 AI 输出贴进来，或自己写结论">${state.outputs[s.id] || ""}</textarea>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="primary" id="copy">复制提示词</button>
-      <button id="save">保存成果</button>
-      <button class="${state.done[s.id] ? "done" : "ghost"}" id="toggle">${state.done[s.id] ? "标记未完成" : "标记完成"}</button>
-      ${s.id < 10 ? `<button class="ghost" id="next">下一步</button>` : ""}
-    </div>
-  `;
-  main.appendChild(card);
-
-  el("copy").onclick = async () => {
-    await navigator.clipboard.writeText(el("prompt").value);
-    el("copy").textContent = "已复制";
-    setTimeout(() => el("copy").textContent = "复制提示词", 1200);
-  };
-  el("save").onclick = () => {
-    state.outputs[s.id] = el("output").value;
-    saveState();
-    el("save").textContent = "已保存";
-    setTimeout(() => el("save").textContent = "保存成果", 1200);
-  };
-  el("toggle").onclick = () => {
-    state.done[s.id] = !state.done[s.id];
-    saveState();
-    render();
-  };
-  const next = el("next");
-  if (next) next.onclick = () => {
-    state.outputs[s.id] = el("output").value;
-    state.current = Math.min(10, s.id + 1);
-    saveState();
-    render();
-  };
-  renderSteps();
-  updateProgress();
-}
-
-function updateProgress() {
-  const doneCount = steps.filter((s) => state.done[s.id]).length;
-  el("progress").style.width = `${(doneCount / steps.length) * 100}%`;
-}
-
-function download(name, content, type) {
-  const blob = new Blob([content], { type });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function exportMd() {
-  let out = `# 10倍速学习闭环\n\n## 主题\n\n${state.topic || "未填写"}\n\n`;
-  steps.forEach((s) => {
-    out += `## ${s.id}. ${s.title}\n\n${state.done[s.id] ? "状态：已完成" : "状态：进行中"}\n\n`;
-    out += `### 提示词\n\n${s.prompt(state.topic || "主题")}\n\n`;
-    out += `### 我的成果\n\n${state.outputs[s.id] || "（待补充）"}\n\n`;
-  });
-  download("10x-learning-workbook.md", out, "text/markdown");
-}
-
-function exportJson() {
-  download("10x-learning-workbook.json", JSON.stringify(state, null, 2), "application/json");
-}
-
-el("apply-topic").onclick = () => {
-  state.topic = el("topic").value.trim();
-  saveState();
-  render();
-};
-el("topic").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") el("apply-topic").click();
-});
-el("export-md").onclick = exportMd;
-el("export-json").onclick = exportJson;
-el("reset").onclick = () => {
-  if (!confirm("确定要清空所有记录吗？")) return;
-  state.topic = "";
-  state.outputs = {};
-  state.done = {};
-  state.current = 1;
-  el("topic").value = "";
-  saveState();
-  render();
-};
-
-loadState();
-render();
-</script>
-</body>
-</html>
+## 6. 最终速查表
+| 项目 | 内容 |
+|---|---|
+| 目标 | 持续学习并沉淀可复盘知识 |
+| 当前阶段 | 第'+p.currentStep+'步：'+STEP_DEFS[p.currentStep-1][1]+' |
+| 核心疑问 | '+questions+' |
+| 下次入口 | 从当前步骤继续，补充资料后重跑最终报告 |
+| 关键资料 | '+materials+' |'; render(); $('#output').textContent=p.report}
+function download(name,text,type){const b=new Blob([text],{type:type||'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name; a.click(); URL.revokeObjectURL(a.href)}
+$('#newBtn').onclick=addProject; $('#newBtn2').onclick=addProject; document.body.addEventListener('click',e=>{const open=e.target.closest('[data-open]'); if(open){state.currentId=open.dataset.open; render(); tab('steps'); return} const set=e.target.closest('[data-step]'); if(set){cur().currentStep=Number(set.dataset.step); cur().progress=Math.max(cur().progress,Math.round((set.dataset.step/10)*100)); render(); return} const sc=e.target.closest('[data-stepcontent]'); if(sc){cur().steps[Number(sc.dataset.stepcontent)-1].content=sc.value; save(); return} const del=e.target.closest('[data-material-delete]'); if(del){cur().materials.splice(Number(del.dataset.materialDelete),1); renderMaterials(); save(); return}}); ['projectName','projectTags','projectStatus','currentStep','startDate','lastUpdated','progress','report','notes','materialNote'].forEach(id=>$('#'+id).addEventListener('input',e=>{const p=cur(); if(!p)return; const v=e.target.value; if(id==='progress')p.progress=Number(v); else if(id==='currentStep')p.currentStep=Number(v); else if(id==='projectTags')p.tags=v.split(',').map(x=>x.trim()).filter(Boolean); else p[id]=v; $('#progressText').textContent=p.progress+'%'; save(); render()})); $('#fileInput').addEventListener('change',e=>{const p=cur(); if(!p)return; [...e.target.files].forEach(f=>{const r=new FileReader(); r.onload=()=>{p.materials.push({id:uid(),name:f.name,type:f.type,size:f.size,date:now(),note:$('#materialNote').value,dataUrl:r.result,addedAt:new Date().toISOString()}); renderMaterials(); save()}; r.readAsDataURL(f)}); e.target.value=''}); document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab)); $('#generateBtn').onclick=generate; $('#copyBtn').onclick=async()=>await navigator.clipboard.writeText($('#output').textContent); $('#exportJsonBtn').onclick=()=>download('learning-workbench-backup.json',JSON.stringify(state,null,2),'application/json'); $('#exportMdBtn').onclick=()=>{const p=cur(); p.report=p.report||$('#report').value; download((p.name||'report').replace(/[\/:*?"<>|]+/g,'-')+'.md',p.report,'text/markdown')}; $('#exportHtmlBtn').onclick=()=>{const p=cur(); const body=p.report||$('#report').value; download((p.name||'report').replace(/[\/:*?"<>|]+/g,'-')+'.html','<!doctype html><meta charset="utf-8"><title>'+esc(p.name)+'</title><body><pre>'+esc(body)+'</pre>')}; $('#importBtn').onclick=()=>$('#importInput').click(); $('#importInput').addEventListener('change',e=>{const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{state=JSON.parse(r.result); save(); render()}; r.readAsText(f)}); load(); render(); tab('steps');
+</script></body></html>
