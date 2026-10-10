@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>10倍速学习闭环</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #5c6673;
+      --line: #dfe3e8;
+      --accent: #d97706;
+      --accent-soft: #fff2e2;
+      --good: #16a34a;
+      --bad: #dc2626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.6;
+    }
+    .shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 64px;
+    }
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      align-items: end;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: 0;
+      line-height: 1.2;
+    }
+    .sub { color: var(--muted); margin-top: 6px; }
+    .topic {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 300px;
+      flex: 1;
+      max-width: 480px;
+    }
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--ink);
+      padding: 12px;
+      font: inherit;
+      resize: vertical;
+    }
+    textarea { min-height: 180px; }
+    .steps {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 20px;
+      scrollbar-width: thin;
+    }
+    .step-chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 14px;
+      white-space: nowrap;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .step-chip.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #7a3c00;
+    }
+    .step-chip.done { color: #046c3d; border-color: #b7e4c7; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .step-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 14px;
+    }
+    .step-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .step-purpose { color: var(--muted); margin-top: 6px; }
+    .pill {
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 6px 12px;
+      color: var(--muted);
+    }
+    .pill.active {
+      border-color: var(--accent);
+      color: #7a3c00;
+      background: var(--accent-soft);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.primary {
+      background: #17202a;
+      border-color: #17202a;
+      color: #fff;
+    }
+    button.ghost {
+      background: transparent;
+      font-weight: 600;
+    }
+    button.danger {
+      color: var(--bad);
+      border-color: #f3b6b6;
+      background: #fff;
+    }
+    button.done {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: #fff;
+    }
+    .progress {
+      height: 6px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width .2s ease;
+    }
+    .footer-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .small-note {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    @media (max-width: 760px) {
+      h1 { font-size: 24px; }
+      .grid { grid-template-columns: 1fr; }
+      .shell { padding: 20px 14px 48px; }
+      .topic { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div>
+        <h1>10倍速学习闭环</h1>
+        <div class="sub">输入主题，按顺序完成十步。每一步都可以复制提示词，把结果贴回来保存。</div>
+      </div>
+      <div class="topic">
+        <label for="topic">学习主题</label>
+        <input id="topic" placeholder="例如：用 RAG 构建知识库" />
+        <button class="primary" id="apply-topic">应用到全部提示词</button>
+      </div>
+    </header>
+
+    <div class="progress"><div class="progress-fill" id="progress"></div></div>
+    <div class="steps" id="steps"></div>
+    <main id="main"></main>
+
+    <div class="card">
+      <div class="small-note">所有内容都保存在本机浏览器里。你可以导出一份 Markdown 工作本，方便复盘或交给别人看。</div>
+      <div class="footer-tools">
+        <div class="btn-row">
+          <button id="export-md">导出 Markdown</button>
+          <button id="export-json">导出 JSON</button>
+          <button class="danger" id="reset">清空</button>
+        </div>
+        <div class="small-note" id="saved-at"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const steps = [
+  {
+    id: 1,
+    title: "五视角调研",
+    purpose: "把一个领域从实践者、学者、怀疑者、经济学家、历史学家的角度拆开，避免只听到最常见的观点。",
+    guide: [
+      "每位专家都要给核心立场、最强证据、只有他会说的一件事。",
+      "这一步的目的不是找答案，而是把领域从不同方向撕开。",
+      "可以用 AI 分批生成，也可以让它一次性给五份解读。"
+    ],
+    prompt: (t) => `我想研究【${t}】。请模拟 5 位不同的专家，从各自的视角分析这个主题：实践者、学者、怀疑者、经济学家、历史学家。每位专家请给出：1）两句话的核心立场；2）支持观点的最强证据；3）一件只有这个视角会提、其他视角不会提的事。`
+  },
+  {
+    id: 2,
+    title: "矛盾图谱",
+    purpose: "让五个视角互相质疑，找出冲突、共识和盲区，把研究从浅层信息推进到结构化理解。",
+    guide: [
+      "重点找谁和谁冲突、依据是什么。",
+      "标记最强证据、最弱证据和可被化解的关键问题。",
+      "共识点更可靠，盲区点往往更有价值。"
+    ],
+    prompt: (t) => `基于上一步的 5 个视角，请为【${t}】画一张矛盾图谱：1）哪些视角直接冲突，依据是什么；2）谁证据最强、谁证据最弱，为什么；3）哪个问题一旦有答案就能化解最大分歧；4）所有视角都同意的是哪一点；5）所有视角都没提到的是哪一点。`
+  },
+  {
+    id: 3,
+    title: "综合简报",
+    purpose: "把前面的多视角分析和矛盾图压成一份可以行动的调研简报。",
+    guide: [
+      "一段话总结：给只有 60 秒的决策者听。",
+      "关键发现要按可信度排序，并标注支持与反对的视角。",
+      "最后一定要落到一条具体行动和一个前沿问题。"
+    ],
+    prompt: (t) => `请把 5 个视角和矛盾图谱整合成一份关于【${t}】的调研简报：1）60 秒摘要；2）5 个关键发现，按可靠性排序，并标注支持与反对视角；3）一个只有跨视角才能看到的隐藏关联；4）一条具体行动建议；5）一个会改变整体理解的前沿问题。`
+  },
+  {
+    id: 4,
+    title: "同行评审自检",
+    purpose: "让 AI 对自己的简报挑刺，找出证据弱、视角失衡、需要补充信息的部分。",
+    guide: [
+      "给关键发现逐个打分。",
+      "明确说出最没把握的结论和需要验证的信息。",
+      "检查是否需要补第 6 个视角。"
+    ],
+    prompt: (t) => `请对关于【${t}】的调研简报做同行评审：给 5 个关键发现各打 1-10 分并解释理由；指出最没把握的结论、需要什么信息才能验证它；指出哪个视角占比过高；判断是否该加入第 6 个视角；最后给出一个专家视角的修改建议。`
+  },
+  {
+    id: 5,
+    title: "资源筛选",
+    purpose: "从大量资料里只留 5 个最值得用的资源，排成一周能走完的学习路径。",
+    guide: [
+      "不要收藏，先看能不能用。",
+      "每个资源说明为什么强、怎么读/看/练、要多久。",
+      "排除被高估的资源，减少收藏吃灰。"
+    ],
+    prompt: (t) => `关于【${t}】，请当我的策展人：从海量资源里只挑 5 个最值得用的，说明它为什么比同类强、该怎么用、大概要花多久、我能从中拿走的一个关键点；再列出被高估的资源或坑；最后排成一条一周能走完的学习路径。`
+  },
+  {
+    id: 6,
+    title: "学习阶梯",
+    purpose: "把主题拆成 5 个清晰难度，知道自己现在在哪、下一步去哪。",
+    guide: [
+      "从完全初学者到自信实践者。",
+      "每一级都要有掌握标准、里程碑和自测。",
+      "避免跳级学，减少挫败感。"
+    ],
+    prompt: (t) => `我想一步步学【${t}】，不跳过重要基础。请把主题分成 5 个清晰难度：完全初学者、基本理解、实际使用者、问题解决者、自信实践者。每个级别给出：级别名称、这个阶段该理解什么、掌握标准、重点概念或技能、里程碑、一个动手练习、常见错误、进入下一级前的自测问题。`
+  },
+  {
+    id: 7,
+    title: "核心 20% 课表",
+    purpose: "找出能带来 80% 效果的 20% 核心，做成 10 次课，先能上手干活。",
+    guide: [
+      "每次课都要有目标、练习、资源和复习题。",
+      "重点是能上手，不是全面覆盖。",
+      "最后要有一个最小项目证明你真的会用。"
+    ],
+    prompt: (t) => `我想用 2 小时学【${t}】。请先找出能带来 80% 实际效果的那 20% 核心概念和技能，解释为什么它们是核心；再排成 10 次课，每次包含学习目标、关键概念、动手练习、推荐资源、完成后预期结果和 5 个复习题；最后给一个能证明我会上手的最小项目。`
+  },
+  {
+    id: 8,
+    title: "严格测试",
+    purpose: "用主动回忆暴露理解边界，把“看起来懂了”变成“真的会用”。",
+    guide: [
+      "10 题从初级到专家级，一次只问一题。",
+      "答完后打分、指出错处、重新解释。",
+      "答得弱就追问，答得好就加难度。"
+    ],
+    prompt: (t) => `我刚学完【${t}】，想测试自己到底理解了多少。请你扮演一位严格但乐于助人的考官：从 10 个问题开始，一次只问一个；问题从初级到专家级逐渐变难；每个回答后给出 0-10 分、答对的部分、确切差距、以及用简单语言重新解释；最后给我最终得分、强项、弱项、复习计划和 5 个挑战题。`
+  },
+  {
+    id: 9,
+    title: "费曼循环",
+    purpose: "用自己的话讲清楚，把讲不明白的地方磨到简单、准确、完整。",
+    guide: [
+      "先用 12 岁能懂的语言讲一遍。",
+      "再让我复述，找出含糊、跳步、绕不过去的地方。",
+      "循环到我能独立讲清，不进新内容。"
+    ],
+    prompt: (t) => `我想用费曼学习法吃透【${t}】里的一个概念。请你当有耐心的学习伙伴：先用简单词和生活例子讲给我听，就当我 12 岁；然后让我用自己的话复述；再指出我复述里每一个含糊、跳步、绕不过去的地方，只重教这些部分；然后让我再讲一遍，循环到我的解释简单、准确、完整。在我讲清楚之前，不要进新内容。`
+  },
+  {
+    id: 10,
+    title: "一页速查表",
+    purpose: "把学过的内容压缩成能用 5 分钟复习的一页纸，方便随时调取。",
+    guide: [
+      "一句大白话定义。",
+      "重要概念、规则、公式或步骤，全用短条目。",
+      "3-5 个真实场景例子和 5 个快问快答。"
+    ],
+    prompt: (t) => `请给我做一份关于【${t}】的一页速查表：一句大白话定义；最重要的概念、规则、公式或步骤；3-5 个真实场景的例子；新手最容易犯的错和最容易混淆的地方；一份“上场前”检查清单；最后加 5 个快问快答。`
+  }
+];
+
+const state = { topic: "", outputs: {}, done: {}, current: 1 };
+const el = (id) => document.getElementById(id);
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem("tenx-learning");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.topic = parsed.topic || "";
+      state.outputs = parsed.outputs || {};
+      state.done = parsed.done || {};
+      state.current = parsed.current || 1;
+    }
+  } catch (e) { console.warn("读取本地记录失败", e); }
+  el("topic").value = state.topic;
+}
+
+function saveState() {
+  const savedAt = new Date().toLocaleString("zh-CN");
+  el("saved-at").textContent = `保存时间：${savedAt}`;
+  localStorage.setItem("tenx-learning", JSON.stringify(state));
+}
+
+function renderSteps() {
+  const wrap = el("steps");
+  wrap.innerHTML = "";
+  steps.forEach((s) => {
+    const b = document.createElement("button");
+    b.className = "step-chip" + (s.id === state.current ? " active" : "") + (state.done[s.id] ? " done" : "");
+    b.textContent = `${s.id}. ${s.title}`;
+    b.onclick = () => { state.current = s.id; saveState(); render(); };
+    wrap.appendChild(b);
+  });
+}
+
+function render() {
+  const s = steps.find((x) => x.id === state.current);
+  const main = el("main");
+  main.innerHTML = "";
+  const card = document.createElement("section");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="step-head">
+      <div>
+        <h2 class="step-title">${s.id}. ${s.title}</h2>
+        <div class="step-purpose">${s.purpose}</div>
+      </div>
+      <div class="pill ${state.done[s.id] ? "done" : "active"}">${state.done[s.id] ? "已完成" : "进行中"}</div>
+    </div>
+    <ul class="guide">
+      ${s.guide.map((g) => `<li>${g}</li>`).join("")}
+    </ul>
+    <div class="grid">
+      <div class="field">
+        <label for="prompt">提示词</label>
+        <textarea id="prompt">${s.prompt(state.topic || "主题")}</textarea>
+      </div>
+      <div class="field">
+        <label for="output">我的成果</label>
+        <textarea id="output" placeholder="把 AI 输出贴进来，或自己写结论">${state.outputs[s.id] || ""}</textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="primary" id="copy">复制提示词</button>
+      <button id="save">保存成果</button>
+      <button class="${state.done[s.id] ? "done" : "ghost"}" id="toggle">${state.done[s.id] ? "标记未完成" : "标记完成"}</button>
+      ${s.id < 10 ? `<button class="ghost" id="next">下一步</button>` : ""}
+    </div>
+  `;
+  main.appendChild(card);
+
+  el("copy").onclick = async () => {
+    await navigator.clipboard.writeText(el("prompt").value);
+    el("copy").textContent = "已复制";
+    setTimeout(() => el("copy").textContent = "复制提示词", 1200);
+  };
+  el("save").onclick = () => {
+    state.outputs[s.id] = el("output").value;
+    saveState();
+    el("save").textContent = "已保存";
+    setTimeout(() => el("save").textContent = "保存成果", 1200);
+  };
+  el("toggle").onclick = () => {
+    state.done[s.id] = !state.done[s.id];
+    saveState();
+    render();
+  };
+  const next = el("next");
+  if (next) next.onclick = () => {
+    state.outputs[s.id] = el("output").value;
+    state.current = Math.min(10, s.id + 1);
+    saveState();
+    render();
+  };
+  renderSteps();
+  updateProgress();
+}
+
+function updateProgress() {
+  const doneCount = steps.filter((s) => state.done[s.id]).length;
+  el("progress").style.width = `${(doneCount / steps.length) * 100}%`;
+}
+
+function download(name, content, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function exportMd() {
+  let out = `# 10倍速学习闭环\n\n## 主题\n\n${state.topic || "未填写"}\n\n`;
+  steps.forEach((s) => {
+    out += `## ${s.id}. ${s.title}\n\n${state.done[s.id] ? "状态：已完成" : "状态：进行中"}\n\n`;
+    out += `### 提示词\n\n${s.prompt(state.topic || "主题")}\n\n`;
+    out += `### 我的成果\n\n${state.outputs[s.id] || "（待补充）"}\n\n`;
+  });
+  download("10x-learning-workbook.md", out, "text/markdown");
+}
+
+function exportJson() {
+  download("10x-learning-workbook.json", JSON.stringify(state, null, 2), "application/json");
+}
+
+el("apply-topic").onclick = () => {
+  state.topic = el("topic").value.trim();
+  saveState();
+  render();
+};
+el("topic").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") el("apply-topic").click();
+});
+el("export-md").onclick = exportMd;
+el("export-json").onclick = exportJson;
+el("reset").onclick = () => {
+  if (!confirm("确定要清空所有记录吗？")) return;
+  state.topic = "";
+  state.outputs = {};
+  state.done = {};
+  state.current = 1;
+  el("topic").value = "";
+  saveState();
+  render();
+};
+
+loadState();
+render();
+</script>
+</body>
+</html>
