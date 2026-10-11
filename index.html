@@ -1,508 +1,1736 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>10倍速学习闭环</title>
-  <style>
-    :root {
-      --bg: #f6f7f9;
-      --panel: #ffffff;
-      --ink: #17202a;
-      --muted: #5c6673;
-      --line: #dfe3e8;
-      --accent: #d97706;
-      --accent-soft: #fff2e2;
-      --good: #16a34a;
-      --bad: #dc2626;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--ink);
-      font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-      line-height: 1.6;
-    }
-    .shell {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 28px 20px 64px;
-    }
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 18px;
-      align-items: end;
-      justify-content: space-between;
-      margin-bottom: 24px;
-    }
-    h1 {
-      margin: 0;
-      font-size: 30px;
-      letter-spacing: 0;
-      line-height: 1.2;
-    }
-    .sub { color: var(--muted); margin-top: 6px; }
-    .topic {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      min-width: 300px;
-      flex: 1;
-      max-width: 480px;
-    }
-    label {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-    input, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fff;
-      color: var(--ink);
-      padding: 12px;
-      font: inherit;
-      resize: vertical;
-    }
-    textarea { min-height: 180px; }
-    .steps {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 6px;
-      margin-bottom: 20px;
-      scrollbar-width: thin;
-    }
-    .step-chip {
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--muted);
-      border-radius: 999px;
-      padding: 8px 14px;
-      white-space: nowrap;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .step-chip.active {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      color: #7a3c00;
-    }
-    .step-chip.done { color: #046c3d; border-color: #b7e4c7; }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 18px;
-    }
-    .step-head {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      justify-content: space-between;
-      align-items: start;
-      margin-bottom: 14px;
-    }
-    .step-title {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 0;
-    }
-    .step-purpose { color: var(--muted); margin-top: 6px; }
-    .pill {
-      font-size: 12px;
-      font-weight: 700;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 6px 12px;
-      color: var(--muted);
-    }
-    .pill.active {
-      border-color: var(--accent);
-      color: #7a3c00;
-      background: var(--accent-soft);
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      align-items: start;
-    }
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
-    }
-    button {
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--ink);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button.primary {
-      background: #17202a;
-      border-color: #17202a;
-      color: #fff;
-    }
-    button.ghost {
-      background: transparent;
-      font-weight: 600;
-    }
-    button.danger {
-      color: var(--bad);
-      border-color: #f3b6b6;
-      background: #fff;
-    }
-    button.done {
-      background: #16a34a;
-      border-color: #16a34a;
-      color: #fff;
-    }
-    .progress {
-      height: 6px;
-      background: #e5e7eb;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-bottom: 18px;
-    }
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-      transition: width .2s ease;
-    }
-    .footer-tools {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: space-between;
-      margin-top: 8px;
-    }
-    .hint {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 8px;
-    }
-    .small-note {
-      font-size: 13px;
-      color: var(--muted);
-    }
-    @media (max-width: 760px) {
-      h1 { font-size: 24px; }
-      .grid { grid-template-columns: 1fr; }
-      .shell { padding: 20px 14px 48px; }
-      .topic { max-width: none; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>10倍速学习闭环</title>
+<style>
+:root{
+  --bg:#f5f6f8; --surface:#fff; --surface-2:#f8fafc;
+  --line:#e6e8ec; --line-2:#d8dce3;
+  --ink:#111827; --ink-2:#4b5563; --muted:#8b94a3;
+  --brand:#2563eb; --brand-d:#1d4ed8; --brand-soft:#eef4ff;
+  --green:#059669; --green-d:#0b7a56; --green-soft:#ecfdf5;
+  --amber:#b9760b; --amber-soft:#fff8eb;
+  --red:#c0392b; --red-soft:#fef2f2;
+  --gray-soft:#f1f3f5;
+  --r:12px; --sh:0 1px 2px rgba(16,24,40,.05);
+  --sh-2:0 10px 28px rgba(16,24,40,.09);
+  --sh-3:0 18px 48px rgba(16,24,40,.18);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font:14px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;letter-spacing:-.015em}
+[hidden]{display:none !important}
+
+/* ---------- 顶栏 ---------- */
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1180px;margin:0 auto;min-height:58px;padding:8px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;font-weight:650;font-size:15px;white-space:nowrap}
+.logo{width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,#60a5fa,#2563eb);display:grid;place-items:center;box-shadow:0 2px 6px rgba(37,99,235,.35);flex:none}
+.spacer{flex:1}
+.search{position:relative}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.search input{width:230px;height:36px;padding:0 12px 0 33px;border:1px solid var(--line-2);border-radius:9px;background:#fff;font-size:13px;outline:none;transition:.15s}
+.search input::placeholder{color:var(--muted)}
+.search input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+
+.btn{height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--line-2);background:#fff;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;cursor:pointer;transition:.15s;white-space:nowrap}
+.btn:hover{background:#f7f8fa;border-color:#c9cfd8}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 1px 2px rgba(37,99,235,.3)}
+.btn-primary:hover{background:var(--brand-d);border-color:var(--brand-d)}
+.btn-ghost{border-color:transparent;background:transparent;color:var(--ink-2)}
+.btn-ghost:hover{background:#eceef2;color:var(--ink)}
+.btn-sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}
+.btn-ok{border-color:#b7e4cd;background:var(--green-soft);color:var(--green-d)}
+.btn-ok:hover{background:#e0f7ec;border-color:#9bd9bd}
+.btn-danger{color:var(--red);border-color:#f0c8c4;background:#fff}
+.btn-danger:hover{background:var(--red-soft);border-color:#e5a9a3}
+.icon-btn{width:28px;height:28px;border-radius:8px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;display:grid;place-items:center;transition:.15s;flex:none}
+.icon-btn:hover{background:#eceef2;color:var(--ink);border-color:var(--line-2)}
+
+/* ---------- 页面 ---------- */
+.page{max-width:1180px;margin:0 auto;padding:28px 24px 96px}
+.page-title{font-size:22px;font-weight:650}
+.page-sub{font-size:13px;color:var(--muted);margin-top:7px}
+.summary{display:flex;gap:16px;margin-top:14px;font-size:12.5px;color:var(--ink-2);flex-wrap:wrap}
+.summary b{font-weight:650;color:var(--ink)}
+
+/* ---------- 工具栏 ---------- */
+.toolbar{display:flex;align-items:center;gap:12px;margin:22px 0 16px;flex-wrap:wrap}
+.tabs{background:#eaecf0;border-radius:9px;padding:3px;display:inline-flex;gap:2px;flex-wrap:wrap}
+.tab{padding:6px 13px;border-radius:7px;font-size:12.5px;color:var(--ink-2);cursor:pointer;border:0;background:transparent;transition:.15s}
+.tab:hover{color:var(--ink)}
+.tab.active{background:#fff;color:var(--ink);font-weight:600;box-shadow:var(--sh)}
+.select{height:34px;border:1px solid var(--line-2);border-radius:9px;background:#fff;padding:0 10px;font-size:12.5px;color:var(--ink-2);cursor:pointer;outline:none}
+.select:focus{border-color:var(--brand)}
+
+/* ---------- 项目卡 ---------- */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(316px,1fr));gap:16px}
+.card{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:17px 18px;box-shadow:var(--sh);cursor:pointer;display:flex;flex-direction:column;gap:11px;transition:.18s;text-align:left;outline:none}
+.card:hover,.card:focus-visible{border-color:#cbd5e1;box-shadow:var(--sh-2);transform:translateY(-2px)}
+.card.is-pinned{border-color:#c7d7f7}
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-name{font-size:15px;font-weight:650;line-height:1.4;word-break:break-word}
+.card-top-right{display:flex;align-items:center;gap:2px;flex:none}
+.card .icon-btn{opacity:0}
+.card:hover .icon-btn,.card:focus-within .icon-btn{opacity:1}
+.card-topic{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:11.5px;padding:2.5px 8px;border-radius:999px;background:var(--gray-soft);color:#5b6472}
+.progress{display:flex;align-items:center;gap:9px}
+.bar{flex:1;height:6px;background:#edf0f3;border-radius:999px;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:999px;background:var(--brand);transition:width .25s}
+.bar.is-done>i{background:var(--green)}
+.bar.is-paused>i{background:#e0a33e}
+.progress em{font-size:11.5px;color:var(--muted);font-style:normal;white-space:nowrap}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:3px}
+.next{font-size:12px;color:var(--brand-d);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.next.is-done{color:var(--green-d)}
+.next.is-paused{color:var(--amber)}
+.when{font-size:11.5px;color:var(--muted);white-space:nowrap;flex:none}
+.card-new{border:1.5px dashed var(--line-2);background:transparent;box-shadow:none;align-items:center;justify-content:center;min-height:196px;color:var(--muted);text-align:center;gap:8px}
+.card-new:hover{border-color:var(--brand);color:var(--brand);background:#f8fbff;transform:translateY(-2px)}
+.card-new span{font-size:13px;font-weight:500}
+.pin-mark{font-size:11px;color:var(--amber);margin-right:2px}
+
+/* ---------- 状态标签 ---------- */
+.pill{font-size:11.5px;font-weight:500;padding:3.5px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.pill i{width:5px;height:5px;border-radius:50%;background:currentColor}
+.pill.active{background:var(--brand-soft);color:var(--brand-d)}
+.pill.paused{background:var(--amber-soft);color:var(--amber)}
+.pill.done{background:var(--green-soft);color:var(--green-d)}
+.pill.idle{background:var(--gray-soft);color:#6b7280}
+
+/* ---------- 空状态 ---------- */
+.empty{border:1.5px dashed var(--line-2);border-radius:16px;padding:56px 24px;text-align:center;color:var(--muted);background:#fff}
+.empty h3{font-size:16px;color:var(--ink);margin-bottom:8px}
+.empty p{font-size:13px;margin:0 0 18px}
+.empty .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* ---------- 项目页 ---------- */
+.subbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.subbar-in{max-width:1180px;margin:0 auto;min-height:58px;padding:8px 24px;display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.subbar .divider{width:1px;height:20px;background:var(--line-2)}
+.subbar .name{font-size:15px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:360px}
+.saved{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.saved.ok{color:var(--green-d)}
+.saved.warn{color:var(--amber)}
+
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;box-shadow:var(--sh);display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.hero h2{font-size:18px;font-weight:650}
+.hero .topic{font-size:13px;color:var(--muted);margin-top:5px}
+.hero .tags{margin-top:11px}
+.hero-right{margin-left:auto;min-width:230px;max-width:300px}
+.hero-right .num{font-size:13px;color:var(--ink-2);display:flex;align-items:baseline;gap:6px;margin-bottom:8px}
+.hero-right .num b{font-size:20px;font-weight:700;letter-spacing:-.02em}
+.steps-nav{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;box-shadow:var(--sh);margin-top:16px;display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:9px;border:1px solid var(--line);background:#fff;font-size:12px;color:var(--ink-2);cursor:pointer;transition:.15s}
+.chip:hover{border-color:#c9cfd8;background:#fafbfc}
+.chip .n{width:18px;height:18px;border-radius:5px;background:var(--gray-soft);color:#6b7280;font-size:11px;font-weight:600;display:grid;place-items:center}
+.chip.done{border-color:#c7ebd8;background:#f6fdf9;color:var(--green-d)}
+.chip.done .n{background:#d6f2e3;color:var(--green-d)}
+.chip.current{border-color:var(--brand);background:var(--brand-soft);color:var(--brand-d);font-weight:600;box-shadow:0 0 0 3px rgba(37,99,235,.10)}
+.chip.current .n{background:var(--brand);color:#fff}
+
+.step-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--sh);margin-top:16px}
+.step-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.step-head h3{font-size:17px;font-weight:650;display:flex;align-items:center;gap:10px}
+.step-head h3 .n{width:24px;height:24px;border-radius:7px;background:var(--brand-soft);color:var(--brand-d);font-size:12.5px;display:grid;place-items:center;font-weight:650}
+.step-head p{font-size:13px;color:var(--ink-2);margin:9px 0 0}
+.guide{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:7px}
+.guide li{font-size:13px;color:var(--ink-2);padding-left:18px;position:relative}
+.guide li::before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;background:#bfd3f7}
+.cols{display:grid;grid-template-columns:1.05fr 1fr;gap:16px;margin-top:20px}
+.panel-label{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.panel-label span{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.prompt{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px;font-size:13px;line-height:1.78;color:#374151;white-space:pre-wrap;height:266px;overflow:auto}
+.result{width:100%;height:266px;border:1px solid var(--line-2);border-radius:10px;padding:14px;font-size:13.5px;line-height:1.78;resize:vertical;outline:none;background:#fff;transition:.15s;display:block}
+.result:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+.step-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.hint{font-size:12px;color:var(--muted)}
+kbd{font:inherit;font-size:11.5px;background:var(--gray-soft);border:1px solid var(--line-2);border-bottom-width:2px;border-radius:5px;padding:1px 5px;color:var(--ink-2)}
+
+.notes-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-top:16px;padding:0 18px}
+.notes-card summary{cursor:pointer;padding:14px 0;font-size:13px;font-weight:600;color:var(--ink-2);list-style:none}
+.notes-card summary::-webkit-details-marker{display:none}
+.notes-card summary::before{content:"▸";display:inline-block;margin-right:8px;color:var(--muted);transition:.15s}
+.notes-card[open] summary::before{transform:rotate(90deg)}
+.notes-card textarea{width:100%;height:130px;border:1px solid var(--line-2);border-radius:10px;padding:12px;font-size:13px;line-height:1.75;resize:vertical;outline:none;background:#fff;margin-bottom:16px}
+.notes-card textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+
+/* ---------- 弹出菜单 ---------- */
+.menu{position:fixed;z-index:60;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:var(--sh-3);padding:6px;min-width:172px}
+.menu button{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px 10px;border:0;background:transparent;border-radius:8px;font-size:13px;cursor:pointer;color:var(--ink)}
+.menu button:hover{background:var(--gray-soft)}
+.menu button.danger{color:var(--red)}
+.menu button.danger:hover{background:var(--red-soft)}
+.menu hr{border:0;border-top:1px solid var(--line);margin:5px 4px}
+
+/* ---------- 弹窗 ---------- */
+.backdrop{position:fixed;inset:0;z-index:70;background:rgba(17,24,39,.42);display:grid;place-items:center;padding:24px;backdrop-filter:blur(2px)}
+.dialog{background:#fff;border-radius:14px;box-shadow:var(--sh-3);width:100%;max-width:460px;padding:22px;max-height:86vh;overflow:auto}
+.dialog h3{font-size:16px;font-weight:650;margin-bottom:4px}
+.dialog .dsub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+.field input,.field textarea,.field select{width:100%;border:1px solid var(--line-2);border-radius:9px;padding:9px 11px;font-size:13.5px;outline:none;transition:.15s;background:#fff}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+.field .tip{font-size:11.5px;color:var(--muted);margin-top:5px}
+.dialog-foot{display:flex;justify-content:flex-end;gap:9px;margin-top:20px}
+.fmt-list{display:grid;gap:8px;margin-bottom:6px}
+.fmt{display:flex;align-items:center;gap:11px;border:1px solid var(--line-2);border-radius:10px;padding:11px 13px;cursor:pointer;transition:.15s}
+.fmt:hover{border-color:#c9cfd8;background:#fafbfc}
+.fmt input{accent-color:var(--brand);width:16px;height:16px;flex:none}
+.fmt b{font-size:13.5px;font-weight:600;display:block}
+.fmt em{font-style:normal;font-size:11.5px;color:var(--muted)}
+
+/* ---------- Toast ---------- */
+#toasts{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:90;display:flex;flex-direction:column;gap:9px;align-items:center;pointer-events:none}
+.toast{pointer-events:auto;background:#111827;color:#fff;border-radius:11px;padding:11px 15px;font-size:13px;box-shadow:var(--sh-3);display:flex;align-items:center;gap:13px;max-width:min(560px,92vw)}
+.toast button{background:transparent;border:0;color:#93c5fd;font-weight:600;cursor:pointer;font-size:13px;padding:0}
+.toast button:hover{text-decoration:underline}
+
+/* ---------- 分组（分栏） ---------- */
+.group{margin-top:24px}
+.group:first-of-type{margin-top:4px}
+.group-head{display:flex;align-items:center;gap:8px;margin-bottom:11px}
+.group-name{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;font-size:14px;font-weight:650;color:var(--ink);cursor:pointer;padding:3px 8px;border-radius:8px;transition:.15s}
+.group-name:hover{background:#e9ecf1}
+.group-name em{font-style:normal;font-size:11.5px;font-weight:500;color:var(--muted);background:#e9ecf1;border-radius:999px;padding:1px 7px}
+.group-name:hover em{background:#fff}
+.gdot{width:7px;height:7px;border-radius:50%;background:var(--brand);flex:none}
+.group-empty{border:1.5px dashed var(--line-2);border-radius:12px;padding:15px;font-size:12.5px;color:var(--muted);text-align:center;background:transparent;cursor:pointer;width:100%;transition:.15s}
+.group-empty:hover{border-color:var(--brand);color:var(--brand);background:#f8fbff}
+
+/* ---------- 附件 ---------- */
+.attach-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 8px}
+.attach-head span{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.drop{border:1.5px dashed var(--line-2);border-radius:11px;padding:14px;text-align:center;font-size:12.5px;color:var(--muted);transition:.15s;background:var(--surface-2)}
+.drop.over{border-color:var(--brand);background:#f2f7ff;color:var(--brand-d)}
+.drop b{color:var(--brand);cursor:pointer}
+.files{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.file{position:relative;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;width:132px;box-shadow:var(--sh)}
+.file img{display:block;width:100%;height:88px;object-fit:cover;background:#f1f3f5;cursor:zoom-in}
+.file .fb{padding:7px 9px;cursor:pointer}
+.file .fn{font-size:11.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.file .fs{font-size:10.5px;color:var(--muted);margin-top:2px}
+.file .fx{position:absolute;top:5px;right:5px;width:20px;height:20px;border-radius:6px;border:0;background:rgba(17,24,39,.62);color:#fff;font-size:12px;cursor:pointer;display:grid;place-items:center;line-height:1;opacity:0;transition:.15s}
+.file:hover .fx{opacity:1}
+.file .ficon{height:88px;display:grid;place-items:center;background:var(--surface-2);color:#9aa3b2}
+.lightbox{position:fixed;inset:0;z-index:95;background:rgba(17,24,39,.82);display:grid;place-items:center;padding:28px;cursor:zoom-out}
+.lightbox img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:var(--sh-3)}
+
+/* ---------- 视图切换（十步 / 总文档） ---------- */
+.viewtabs{display:inline-flex;background:#eaecf0;border-radius:9px;padding:3px;gap:2px;margin:16px 0 0}
+.viewtabs button{padding:6px 14px;border-radius:7px;font-size:12.5px;color:var(--ink-2);cursor:pointer;border:0;background:transparent;transition:.15s}
+.viewtabs button.active{background:#fff;color:var(--ink);font-weight:600;box-shadow:var(--sh)}
+.doc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:26px 30px;margin-top:14px}
+.doc h1{font-size:22px;margin-bottom:6px}
+.doc .doc-meta{font-size:12.5px;color:var(--muted);padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.doc .toc{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:14px 18px;font-size:13px;margin-bottom:24px}
+.doc .toc div{margin:3px 0}
+.doc .toc a{color:var(--brand-d);text-decoration:none}
+.doc .toc a:hover{text-decoration:underline}
+.doc section.dstep{padding-top:20px;margin-top:20px;border-top:1px solid var(--line)}
+.doc section.dstep:first-of-type{border-top:0;margin-top:0}
+.doc h2{font-size:16.5px;display:flex;align-items:center;gap:9px}
+.doc h2 .n{width:22px;height:22px;border-radius:6px;background:var(--brand-soft);color:var(--brand-d);font-size:12px;display:grid;place-items:center;font-weight:650}
+.doc .purpose{font-size:13px;color:var(--ink-2);margin:8px 0 0}
+.doc h4{font-size:12px;font-weight:600;color:var(--muted);margin:16px 0 7px}
+.doc .pre{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:12px 14px;font-size:12.5px;line-height:1.75;color:#374151;white-space:pre-wrap}
+.doc .res{font-size:13.5px;line-height:1.85;white-space:pre-wrap;border-left:3px solid #dbeafe;padding-left:14px}
+.doc .res.empty{color:var(--muted);font-style:italic;border-left-color:#e5e7eb}
+.doc-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+@media print{
+  .topbar,.subbar,.viewtabs,.doc-tools,#toasts,.steps-nav,.step-card,.notes-card,.page-title,.page-sub,.summary,.toolbar,.group-head{display:none !important}
+  body{background:#fff}
+  .page{padding:0;max-width:none}
+  .doc{border:0;box-shadow:none;padding:0}
+  .doc section.dstep{break-inside:avoid}
+}
+
+@media (max-width:900px){
+  .cols{grid-template-columns:1fr}
+  .search input{width:150px}
+  .hero-right{margin-left:0}
+  .page{padding:20px 16px 80px}
+  .topbar-in,.subbar-in{padding-left:16px;padding-right:16px}
+  .cards{grid-template-columns:1fr}
+  .steps-nav{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px}
+  .chip{flex:none}
+  .subbar .name{max-width:140px}
+  .backdrop{padding:12px;align-items:flex-start}
+  .dialog{max-width:100%;padding:18px;margin-top:12px}
+  .doc{padding:18px}
+  .card .icon-btn{opacity:1}
+}
+@media (hover:none){.card .icon-btn{opacity:1}}
+</style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <div>
-        <h1>10倍速学习闭环</h1>
-        <div class="sub">输入主题，按顺序完成十步。每一步都可以复制提示词，把结果贴回来保存。</div>
-      </div>
-      <div class="topic">
-        <label for="topic">学习主题</label>
-        <input id="topic" placeholder="例如：用 RAG 构建知识库" />
-        <button class="primary" id="apply-topic">应用到全部提示词</button>
-      </div>
-    </header>
 
-    <div class="progress"><div class="progress-fill" id="progress"></div></div>
-    <div class="steps" id="steps"></div>
-    <main id="main"></main>
-
-    <div class="card">
-      <div class="small-note">所有内容都保存在本机浏览器里。你可以导出一份 Markdown 工作本，方便复盘或交给别人看。</div>
-      <div class="footer-tools">
-        <div class="btn-row">
-          <button id="export-md">导出 Markdown</button>
-          <button id="export-json">导出 JSON</button>
-          <button class="danger" id="reset">清空</button>
-        </div>
-        <div class="small-note" id="saved-at"></div>
-      </div>
+<!-- ==================== 首页：项目库 ==================== -->
+<div id="view-home">
+  <header class="topbar"><div class="topbar-in">
+    <div class="brand">
+      <div class="logo"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg></div>
+      10倍速学习闭环
     </div>
-  </div>
+    <div class="spacer"></div>
+    <div class="search">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+      <input id="q" placeholder="搜索项目名、主题或标签…">
+    </div>
+    <button class="btn" id="btnImport">导入备份</button>
+    <button class="btn" id="btnBackup">导出全部备份</button>
+    <button class="btn btn-primary" id="btnNew">新建项目</button>
+    <input type="file" id="fileImport" accept=".json,application/json" hidden>
+  </div></header>
+
+  <main class="page">
+    <h1 class="page-title">我的学习项目</h1>
+    <p class="page-sub">每个项目独立保存进度，随时可以停下来，下次点进去接着上次那一步继续。</p>
+    <div class="summary" id="summary"></div>
+
+    <div class="toolbar">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-filter="all">全部</button>
+        <button class="tab" data-filter="active">进行中</button>
+        <button class="tab" data-filter="paused">已暂停</button>
+        <button class="tab" data-filter="done">已完成</button>
+        <button class="tab" data-filter="archived">已归档</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-sm" id="btnNewGroup">＋ 新建分类</button>
+      <select class="select" id="sortSel">
+        <option value="updated">按最后编辑排序</option>
+        <option value="created">按创建时间排序</option>
+        <option value="name">按名称排序</option>
+        <option value="progress">按进度排序</option>
+      </select>
+    </div>
+
+    <div id="groups"></div>
+    <div id="emptyState" hidden></div>
+  </main>
+</div>
+
+<!-- ==================== 项目工作台 ==================== -->
+<div id="view-project" hidden>
+  <header class="subbar"><div class="subbar-in">
+    <button class="btn btn-ghost btn-sm" id="btnBack">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>项目库
+    </button>
+    <div class="divider"></div>
+    <div class="name" id="sbName"></div>
+    <button class="pill idle" id="sbStatus" style="cursor:pointer;border:0"><i></i><span></span></button>
+    <div class="spacer"></div>
+    <span class="saved" id="saved"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg><span>已自动保存</span></span>
+    <button class="btn btn-sm" id="btnEditInfo">编辑信息</button>
+    <button class="btn btn-sm" id="btnExportOne">导出</button>
+  </div></header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <h2 id="prName"></h2>
+        <div class="topic" id="prTopic"></div>
+        <div class="tags" id="prTags"></div>
+      </div>
+      <div class="hero-right">
+        <div class="num">已完成 <b id="prDone">0</b> / 10 步</div>
+        <div class="bar" id="prBarWrap"><i id="prBar" style="width:0"></i></div>
+      </div>
+    </section>
+
+    <div class="viewtabs" id="viewTabs">
+      <button class="active" data-v="flow">十步流程</button>
+      <button data-v="doc">总文档</button>
+    </div>
+
+    <div id="paneFlow">
+    <nav class="steps-nav" id="stepsNav"></nav>
+
+    <section class="step-card">
+      <div class="step-head">
+        <div>
+          <h3><span class="n" id="stNo">1</span><span id="stTitle"></span></h3>
+          <p id="stPurpose"></p>
+        </div>
+        <span class="pill idle" id="stState"><i></i><span></span></span>
+      </div>
+      <ul class="guide" id="stGuide"></ul>
+
+      <div class="cols">
+        <div>
+          <div class="panel-label"><span>提示词</span><button class="btn btn-sm" id="btnCopy">复制提示词</button></div>
+          <div class="prompt" id="stPrompt"></div>
+        </div>
+        <div>
+          <div class="panel-label"><span>我的成果</span><span class="hint" id="resultHint">输入即自动保存</span></div>
+          <textarea class="result" id="resultBox" spellcheck="false" placeholder="把 AI 的输出贴进来，或自己写结论…"></textarea>
+        </div>
+      </div>
+
+      <div class="attach-head">
+        <span>图片 / 文件</span>
+        <span class="hint" id="attachHint">可直接 Ctrl+V 粘贴截图，或拖进来</span>
+      </div>
+      <div class="drop" id="drop">把图片或文件拖到这里，或者 <b id="btnPick">选择文件</b></div>
+      <input type="file" id="filePick" multiple hidden>
+      <div class="files" id="files"></div>
+
+      <div class="step-foot">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-sm" id="btnMark">标记完成</button>
+          <button class="btn btn-sm btn-ghost" id="btnClearStep">清空本步</button>
+          <span class="hint">按 <kbd>Esc</kbd> 返回项目库</span>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-sm" id="btnPrev">上一步</button>
+          <button class="btn btn-primary btn-sm" id="btnNext">下一步</button>
+        </div>
+      </div>
+    </section>
+
+    <details class="notes-card" id="notesCard">
+      <summary>项目备注（疑问、待补、资料清单…）</summary>
+      <textarea id="notesBox" placeholder="随手记：哪一步卡住了、下次从哪继续、要补什么资料…"></textarea>
+    </details>
+    </div><!-- /paneFlow -->
+
+    <div id="paneDoc" hidden></div>
+  </main>
+</div>
+
+<div id="toasts"></div>
 
 <script>
-const steps = [
-  {
-    id: 1,
-    title: "五视角调研",
-    purpose: "把一个领域从实践者、学者、怀疑者、经济学家、历史学家的角度拆开，避免只听到最常见的观点。",
-    guide: [
-      "每位专家都要给核心立场、最强证据、只有他会说的一件事。",
-      "这一步的目的不是找答案，而是把领域从不同方向撕开。",
-      "可以用 AI 分批生成，也可以让它一次性给五份解读。"
-    ],
-    prompt: (t) => `我想研究【${t}】。请模拟 5 位不同的专家，从各自的视角分析这个主题：实践者、学者、怀疑者、经济学家、历史学家。每位专家请给出：1）两句话的核心立场；2）支持观点的最强证据；3）一件只有这个视角会提、其他视角不会提的事。`
-  },
-  {
-    id: 2,
-    title: "矛盾图谱",
-    purpose: "让五个视角互相质疑，找出冲突、共识和盲区，把研究从浅层信息推进到结构化理解。",
-    guide: [
-      "重点找谁和谁冲突、依据是什么。",
-      "标记最强证据、最弱证据和可被化解的关键问题。",
-      "共识点更可靠，盲区点往往更有价值。"
-    ],
-    prompt: (t) => `基于上一步的 5 个视角，请为【${t}】画一张矛盾图谱：1）哪些视角直接冲突，依据是什么；2）谁证据最强、谁证据最弱，为什么；3）哪个问题一旦有答案就能化解最大分歧；4）所有视角都同意的是哪一点；5）所有视角都没提到的是哪一点。`
-  },
-  {
-    id: 3,
-    title: "综合简报",
-    purpose: "把前面的多视角分析和矛盾图压成一份可以行动的调研简报。",
-    guide: [
-      "一段话总结：给只有 60 秒的决策者听。",
-      "关键发现要按可信度排序，并标注支持与反对的视角。",
-      "最后一定要落到一条具体行动和一个前沿问题。"
-    ],
-    prompt: (t) => `请把 5 个视角和矛盾图谱整合成一份关于【${t}】的调研简报：1）60 秒摘要；2）5 个关键发现，按可靠性排序，并标注支持与反对视角；3）一个只有跨视角才能看到的隐藏关联；4）一条具体行动建议；5）一个会改变整体理解的前沿问题。`
-  },
-  {
-    id: 4,
-    title: "同行评审自检",
-    purpose: "让 AI 对自己的简报挑刺，找出证据弱、视角失衡、需要补充信息的部分。",
-    guide: [
-      "给关键发现逐个打分。",
-      "明确说出最没把握的结论和需要验证的信息。",
-      "检查是否需要补第 6 个视角。"
-    ],
-    prompt: (t) => `请对关于【${t}】的调研简报做同行评审：给 5 个关键发现各打 1-10 分并解释理由；指出最没把握的结论、需要什么信息才能验证它；指出哪个视角占比过高；判断是否该加入第 6 个视角；最后给出一个专家视角的修改建议。`
-  },
-  {
-    id: 5,
-    title: "资源筛选",
-    purpose: "从大量资料里只留 5 个最值得用的资源，排成一周能走完的学习路径。",
-    guide: [
-      "不要收藏，先看能不能用。",
-      "每个资源说明为什么强、怎么读/看/练、要多久。",
-      "排除被高估的资源，减少收藏吃灰。"
-    ],
-    prompt: (t) => `关于【${t}】，请当我的策展人：从海量资源里只挑 5 个最值得用的，说明它为什么比同类强、该怎么用、大概要花多久、我能从中拿走的一个关键点；再列出被高估的资源或坑；最后排成一条一周能走完的学习路径。`
-  },
-  {
-    id: 6,
-    title: "学习阶梯",
-    purpose: "把主题拆成 5 个清晰难度，知道自己现在在哪、下一步去哪。",
-    guide: [
-      "从完全初学者到自信实践者。",
-      "每一级都要有掌握标准、里程碑和自测。",
-      "避免跳级学，减少挫败感。"
-    ],
-    prompt: (t) => `我想一步步学【${t}】，不跳过重要基础。请把主题分成 5 个清晰难度：完全初学者、基本理解、实际使用者、问题解决者、自信实践者。每个级别给出：级别名称、这个阶段该理解什么、掌握标准、重点概念或技能、里程碑、一个动手练习、常见错误、进入下一级前的自测问题。`
-  },
-  {
-    id: 7,
-    title: "核心 20% 课表",
-    purpose: "找出能带来 80% 效果的 20% 核心，做成 10 次课，先能上手干活。",
-    guide: [
-      "每次课都要有目标、练习、资源和复习题。",
-      "重点是能上手，不是全面覆盖。",
-      "最后要有一个最小项目证明你真的会用。"
-    ],
-    prompt: (t) => `我想用 2 小时学【${t}】。请先找出能带来 80% 实际效果的那 20% 核心概念和技能，解释为什么它们是核心；再排成 10 次课，每次包含学习目标、关键概念、动手练习、推荐资源、完成后预期结果和 5 个复习题；最后给一个能证明我会上手的最小项目。`
-  },
-  {
-    id: 8,
-    title: "严格测试",
-    purpose: "用主动回忆暴露理解边界，把“看起来懂了”变成“真的会用”。",
-    guide: [
-      "10 题从初级到专家级，一次只问一题。",
-      "答完后打分、指出错处、重新解释。",
-      "答得弱就追问，答得好就加难度。"
-    ],
-    prompt: (t) => `我刚学完【${t}】，想测试自己到底理解了多少。请你扮演一位严格但乐于助人的考官：从 10 个问题开始，一次只问一个；问题从初级到专家级逐渐变难；每个回答后给出 0-10 分、答对的部分、确切差距、以及用简单语言重新解释；最后给我最终得分、强项、弱项、复习计划和 5 个挑战题。`
-  },
-  {
-    id: 9,
-    title: "费曼循环",
-    purpose: "用自己的话讲清楚，把讲不明白的地方磨到简单、准确、完整。",
-    guide: [
-      "先用 12 岁能懂的语言讲一遍。",
-      "再让我复述，找出含糊、跳步、绕不过去的地方。",
-      "循环到我能独立讲清，不进新内容。"
-    ],
-    prompt: (t) => `我想用费曼学习法吃透【${t}】里的一个概念。请你当有耐心的学习伙伴：先用简单词和生活例子讲给我听，就当我 12 岁；然后让我用自己的话复述；再指出我复述里每一个含糊、跳步、绕不过去的地方，只重教这些部分；然后让我再讲一遍，循环到我的解释简单、准确、完整。在我讲清楚之前，不要进新内容。`
-  },
-  {
-    id: 10,
-    title: "一页速查表",
-    purpose: "把学过的内容压缩成能用 5 分钟复习的一页纸，方便随时调取。",
-    guide: [
-      "一句大白话定义。",
-      "重要概念、规则、公式或步骤，全用短条目。",
-      "3-5 个真实场景例子和 5 个快问快答。"
-    ],
-    prompt: (t) => `请给我做一份关于【${t}】的一页速查表：一句大白话定义；最重要的概念、规则、公式或步骤；3-5 个真实场景的例子；新手最容易犯的错和最容易混淆的地方；一份“上场前”检查清单；最后加 5 个快问快答。`
-  }
+/* ============================================================
+   10倍速学习闭环 v2 —— 项目库 + 项目工作台
+   数据全部存在浏览器本地（localStorage），可随时导出备份。
+   ============================================================ */
+
+/* ---------- 十步定义（内容与原版完全一致） ---------- */
+const STEPS = [
+  {id:1,title:"五视角调研",purpose:"把一个领域从实践者、学者、怀疑者、经济学家、历史学家的角度拆开，避免只听到最常见的观点。",guide:["每位专家都要给核心立场、最强证据、只有他会说的一件事。","这一步的目的不是找答案，而是把领域从不同方向撕开。","可以用 AI 分批生成，也可以让它一次性给五份解读。"],prompt:"我想研究【{T}】。请模拟 5 位不同的专家，从各自的视角分析这个主题：实践者、学者、怀疑者、经济学家、历史学家。每位专家请给出：1）两句话的核心立场；2）支持观点的最强证据；3）一件只有这个视角会提、其他视角不会提的事。"},
+  {id:2,title:"矛盾图谱",purpose:"让五个视角互相质疑，找出冲突、共识和盲区，把研究从浅层信息推进到结构化理解。",guide:["重点找谁和谁冲突、依据是什么。","标记最强证据、最弱证据和可被化解的关键问题。","共识点更可靠，盲区点往往更有价值。"],prompt:"基于上一步的 5 个视角，请为【{T}】画一张矛盾图谱：1）哪些视角直接冲突，依据是什么；2）谁证据最强、谁证据最弱，为什么；3）哪个问题一旦有答案就能化解最大分歧；4）所有视角都同意的是哪一点；5）所有视角都没提到的是哪一点。"},
+  {id:3,title:"综合简报",purpose:"把前面的多视角分析和矛盾图压成一份可以行动的调研简报。",guide:["一段话总结：给只有 60 秒的决策者听。","关键发现要按可信度排序，并标注支持与反对的视角。","最后一定要落到一条具体行动和一个前沿问题。"],prompt:"请把 5 个视角和矛盾图谱整合成一份关于【{T}】的调研简报：1）60 秒摘要；2）5 个关键发现，按可靠性排序，并标注支持与反对视角；3）一个只有跨视角才能看到的隐藏关联；4）一条具体行动建议；5）一个会改变整体理解的前沿问题。"},
+  {id:4,title:"同行评审自检",purpose:"让 AI 对自己的简报挑刺，找出证据弱、视角失衡、需要补充信息的部分。",guide:["给关键发现逐个打分。","明确说出最没把握的结论和需要验证的信息。","检查是否需要补第 6 个视角。"],prompt:"请对关于【{T}】的调研简报做同行评审：给 5 个关键发现各打 1-10 分并解释理由；指出最没把握的结论、需要什么信息才能验证它；指出哪个视角占比过高；判断是否该加入第 6 个视角；最后给出一个专家视角的修改建议。"},
+  {id:5,title:"资源筛选",purpose:"从大量资料里只留 5 个最值得用的资源，排成一周能走完的学习路径。",guide:["不要收藏，先看能不能用。","每个资源说明为什么强、怎么读/看/练、要多久。","排除被高估的资源，减少收藏吃灰。"],prompt:"关于【{T}】，请当我的策展人：从海量资源里只挑 5 个最值得用的，说明它为什么比同类强、该怎么用、大概要花多久、我能从中拿走的一个关键点；再列出被高估的资源或坑；最后排成一条一周能走完的学习路径。"},
+  {id:6,title:"学习阶梯",purpose:"把主题拆成 5 个清晰难度，知道自己现在在哪、下一步去哪。",guide:["从完全初学者到自信实践者。","每一级都要有掌握标准、里程碑和自测。","避免跳级学，减少挫败感。"],prompt:"我想一步步学【{T}】，不跳过重要基础。请把主题分成 5 个清晰难度：完全初学者、基本理解、实际使用者、问题解决者、自信实践者。每个级别给出：级别名称、这个阶段该理解什么、掌握标准、重点概念或技能、里程碑、一个动手练习、常见错误、进入下一级前的自测问题。"},
+  {id:7,title:"核心 20% 课表",purpose:"找出能带来 80% 效果的 20% 核心，做成 10 次课，先能上手干活。",guide:["每次课都要有目标、练习、资源和复习题。","重点是能上手，不是全面覆盖。","最后要有一个最小项目证明你真的会用。"],prompt:"我想用 2 小时学【{T}】。请先找出能带来 80% 实际效果的那 20% 核心概念和技能，解释为什么它们是核心；再排成 10 次课，每次包含学习目标、关键概念、动手练习、推荐资源、完成后预期结果和 5 个复习题；最后给一个能证明我会上手的最小项目。"},
+  {id:8,title:"严格测试",purpose:"用主动回忆暴露理解边界，把“看起来懂了”变成“真的会用”。",guide:["10 题从初级到专家级，一次只问一题。","答完后打分、指出错处、重新解释。","答得弱就追问，答得好就加难度。"],prompt:"我刚学完【{T}】，想测试自己到底理解了多少。请你扮演一位严格但乐于助人的考官：从 10 个问题开始，一次只问一个；问题从初级到专家级逐渐变难；每个回答后给出 0-10 分、答对的部分、确切差距、以及用简单语言重新解释；最后给我最终得分、强项、弱项、复习计划和 5 个挑战题。"},
+  {id:9,title:"费曼循环",purpose:"用自己的话讲清楚，把讲不明白的地方磨到简单、准确、完整。",guide:["先用 12 岁能懂的语言讲一遍。","再让我复述，找出含糊、跳步、绕不过去的地方。","循环到我能独立讲清，不进新内容。"],prompt:"我想用费曼学习法吃透【{T}】里的一个概念。请你当有耐心的学习伙伴：先用简单词和生活例子讲给我听，就当我 12 岁；然后让我用自己的话复述；再指出我复述里每一个含糊、跳步、绕不过去的地方，只重教这些部分；然后让我再讲一遍，循环到我的解释简单、准确、完整。在我讲清楚之前，不要进新内容。"},
+  {id:10,title:"一页速查表",purpose:"把学过的内容压缩成能用 5 分钟复习的一页纸，方便随时调取。",guide:["一句大白话定义。","重要概念、规则、公式或步骤，全用短条目。","3-5 个真实场景例子和 5 个快问快答。"],prompt:"请给我做一份关于【{T}】的一页速查表：一句大白话定义；最重要的概念、规则、公式或步骤；3-5 个真实场景的例子；新手最容易犯的错和最容易混淆的地方；一份“上场前”检查清单；最后加 5 个快问快答。"}
 ];
 
-const state = { topic: "", outputs: {}, done: {}, current: 1 };
-const el = (id) => document.getElementById(id);
+const KEY = "tenx-learning-v2";
+const LABEL = { active:"进行中", paused:"已暂停", done:"已完成", idle:"未开始" };
+const ORDER = { idle:0, active:1, paused:2, done:3 };
 
-function loadState() {
+/* ---------- 小工具 ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+function fmtWhen(iso){
+  if(!iso) return "—";
+  const d = new Date(iso), now = new Date();
+  const hm = String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  if(d.toDateString() === now.toDateString()) return "今天 "+hm;
+  const y = new Date(now.getTime() - 86400000);
+  if(d.toDateString() === y.toDateString()) return "昨天 "+hm;
+  if(d.getFullYear() === now.getFullYear()) return (d.getMonth()+1)+"月"+d.getDate()+"日";
+  return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+}
+const stamp = () => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const safeName = s => String(s||"项目").replace(/[\\/:*?"<>|\s]+/g,"-").slice(0,60);
+
+/* ---------- 数据层 ---------- */
+let state = { version:3, groups:[], projects:[], settings:{} };
+let curId = null, curStep = 1;
+let filter = "all", query = "", sortBy = "updated", pane = "flow";
+let saveTimer = null, lastSavedAt = null;
+
+function blankProject(name, topic, groupId){
+  const now = new Date().toISOString();
+  return { id:uid(), name:name||"未命名项目", topic:topic||"", tags:[], status:"idle",
+    currentStep:1, steps:STEPS.map(()=>({content:"",done:false,files:[]})), notes:"",
+    createdAt:now, updatedAt:now, pinned:false, archived:false, groupId: groupId || "" };
+}
+const doneCount = p => p.steps.filter(s=>s.done).length;
+const getProject = id => state.projects.find(p=>p.id===id);
+const getGroup = id => state.groups.find(g=>g.id===id);
+
+function normalize(p){
+  const b = blankProject(p.name, p.topic);
+  const out = Object.assign(b, p);
+  out.steps = STEPS.map((_,i)=> {
+    const s = (p.steps && p.steps[i]) || {};
+    return {
+      content: String(s.content||""),
+      done: !!s.done,
+      files: Array.isArray(s.files) ? s.files.filter(f=>f && f.id).map(f => {
+        const o = { id:String(f.id), name:String(f.name||"文件"), type:String(f.type||""), size:Number(f.size)||0 };
+        if(f.dataUrl) o.dataUrl = String(f.dataUrl);
+        return o;
+      }) : []
+    };
+  });
+  out.tags = Array.isArray(p.tags) ? p.tags.filter(Boolean).slice(0,8) : [];
+  out.currentStep = clamp(parseInt(p.currentStep||1,10)||1, 1, 10);
+  if(!LABEL[out.status]) out.status = "idle";
+  out.pinned = !!p.pinned; out.archived = !!p.archived;
+  out.groupId = typeof p.groupId === "string" ? p.groupId : "";
+  return out;
+}
+
+/* 分类（分栏）：保证至少有一个分类，且所有项目都归属到有效分类 */
+function ensureGroups(){
+  if(!Array.isArray(state.groups) || !state.groups.length){
+    state.groups = [{ id:"g"+uid(), name:"未分类" }];
+  }
+  state.groups = state.groups.filter(g=>g && g.id)
+    .map(g=>({ id:String(g.id), name:(String(g.name||"").trim() || "未分类").slice(0,20) }));
+  const ids = new Set(state.groups.map(g=>g.id));
+  state.projects.forEach(p=>{ if(!ids.has(p.groupId)) p.groupId = state.groups[0].id; });
+}
+
+function load(){
+  let raw = null;
+  try { raw = localStorage.getItem(KEY); } catch(e){}
+  if(raw){
+    try {
+      const o = JSON.parse(raw);
+      if(o && Array.isArray(o.projects)){
+        state = { version:3, groups:Array.isArray(o.groups)?o.groups:[], projects:o.projects.map(p=>normalize(p)), settings:o.settings||{} };
+        if(state.settings.sort) sortBy = state.settings.sort;
+        ensureGroups();
+        return 0;
+      }
+    } catch(e){}
+  }
+  // 没有新版数据 —— 看看有没有旧版数据可以搬
+  const legacy = migrateLegacy();
+  state = { version:3, groups:[], projects:legacy, settings:{} };
+  ensureGroups();
+  if(legacy.length){
+    saveNow();
+    setTimeout(()=>toast("已从旧版本导入 "+legacy.length+" 个项目（旧数据仍保留在浏览器里，没有删除）"), 600);
+  }
+  return legacy.length;
+}
+
+function saveNow(){
+  clearTimeout(saveTimer); saveTimer = null;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+    lastSavedAt = new Date();
+    markSaved();
+    return true;
+  } catch(e){
+    markSaveError();
+    toast("保存失败：浏览器存储空间可能已满。建议先导出备份，再删掉一些项目。");
+    return false;
+  }
+}
+function scheduleSave(){
+  markSaving();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 450);
+}
+function markSaving(){
+  const el = $("#saved"); if(!el) return;
+  el.className = "saved";
+  el.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9"/><path d="m8 9 4 4 4-4"/><path d="M5 21h14"/></svg><span>保存中…</span>';
+}
+function markSaved(){
+  const el = $("#saved"); if(!el) return;
+  const d = lastSavedAt || new Date();
+  const hm = String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+  el.className = "saved ok";
+  el.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg><span>已自动保存 '+hm+'</span>';
+}
+function markSaveError(){
+  const el = $("#saved"); if(!el) return;
+  el.className = "saved warn";
+  el.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 8v5"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg><span>保存失败</span>';
+}
+
+/* ---------- 旧版数据迁移 ---------- */
+function migrateLegacy(){
+  const out = [];
+  // 第一版「10倍速学习闭环」：单个主题
   try {
     const raw = localStorage.getItem("tenx-learning");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      state.topic = parsed.topic || "";
-      state.outputs = parsed.outputs || {};
-      state.done = parsed.done || {};
-      state.current = parsed.current || 1;
+    if(raw){
+      const o = JSON.parse(raw) || {};
+      const p = blankProject(String(o.topic||"").trim() || "旧版项目", String(o.topic||""));
+      for(let i=0;i<10;i++){
+        const k = String(i+1);
+        if(o.outputs && o.outputs[k]) p.steps[i].content = String(o.outputs[k]);
+        if(o.done && o.done[k]) p.steps[i].done = true;
+      }
+      p.currentStep = clamp(parseInt(o.current||1,10)||1, 1, 10);
+      p.tags = ["旧版导入"];
+      p.status = p.steps.every(s=>s.done) ? "done" : (doneCount(p)>0 ? "active" : "idle");
+      out.push(p);
     }
-  } catch (e) { console.warn("读取本地记录失败", e); }
-  el("topic").value = state.topic;
+  } catch(e){}
+  // 被替换掉的「学习项目工作台」：多项目
+  try {
+    const raw = localStorage.getItem("learning-workbench-v1");
+    if(raw){
+      const o = JSON.parse(raw) || {};
+      (o.projects||[]).forEach(pr => {
+        const p = blankProject(String(pr.name||"").trim() || "旧版项目", "");
+        p.tags = Array.isArray(pr.tags) ? pr.tags.filter(Boolean).slice(0,8) : [];
+        (pr.steps||[]).slice(0,10).forEach((s,i) => { p.steps[i].content = String((s&&s.content)||""); });
+        p.currentStep = clamp(parseInt(pr.currentStep||1,10)||1, 1, 10);
+        const doneN = (Number(pr.progress)>=100) ? 10 : Math.max(0, p.currentStep-1);
+        for(let i=0;i<doneN;i++) p.steps[i].done = true;
+        if(pr.report && !p.steps[9].content) p.steps[9].content = String(pr.report);
+        let notes = String(pr.notes||"");
+        const mats = Array.isArray(pr.materials) ? pr.materials : [];
+        if(mats.length){
+          notes += (notes ? "\n\n" : "") + "【旧版资料清单（文件本体未导入）】\n" +
+            mats.map(m => "- " + (m.name||"文件") + (m.note ? "（"+m.note+"）" : "")).join("\n");
+        }
+        p.notes = notes;
+        p.status = ({"已完成":"done","进行中":"active","暂停":"paused","待评审":"active"})[pr.status] || "active";
+        p.updatedAt = pr.lastUpdated ? new Date(pr.lastUpdated).toISOString() : p.updatedAt;
+        out.push(p);
+      });
+    }
+  } catch(e){}
+  return out;
 }
 
-function saveState() {
-  const savedAt = new Date().toLocaleString("zh-CN");
-  el("saved-at").textContent = `保存时间：${savedAt}`;
-  localStorage.setItem("tenx-learning", JSON.stringify(state));
-}
-
-function renderSteps() {
-  const wrap = el("steps");
-  wrap.innerHTML = "";
-  steps.forEach((s) => {
+/* ---------- Toast ---------- */
+function toast(msg, action){
+  const box = $("#toasts");
+  const el = document.createElement("div");
+  el.className = "toast";
+  el.innerHTML = "<span></span>";
+  el.firstChild.textContent = msg;
+  if(action){
     const b = document.createElement("button");
-    b.className = "step-chip" + (s.id === state.current ? " active" : "") + (state.done[s.id] ? " done" : "");
-    b.textContent = `${s.id}. ${s.title}`;
-    b.onclick = () => { state.current = s.id; saveState(); render(); };
-    wrap.appendChild(b);
+    b.textContent = action.label;
+    b.onclick = () => { action.run(); el.remove(); };
+    el.appendChild(b);
+  }
+  box.appendChild(el);
+  const ttl = action ? 8000 : 3200;
+  setTimeout(()=>{ el.remove(); }, ttl);
+  return el;
+}
+
+/* ---------- 弹出菜单 ---------- */
+let menuEl = null;
+function closeMenu(){ if(menuEl){ menuEl.remove(); menuEl = null; } }
+function openMenu(anchor, items){
+  closeMenu();
+  const m = document.createElement("div");
+  m.className = "menu";
+  items.forEach(it => {
+    if(it === "-"){ m.appendChild(document.createElement("hr")); return; }
+    const b = document.createElement("button");
+    if(it.danger) b.className = "danger";
+    b.textContent = it.label;
+    b.onclick = () => { closeMenu(); it.run(); };
+    m.appendChild(b);
+  });
+  document.body.appendChild(m);
+  const r = anchor.getBoundingClientRect();
+  const w = m.offsetWidth, h = m.offsetHeight;
+  let left = Math.min(r.right - w, window.innerWidth - w - 12);
+  let top = r.bottom + 6;
+  if(top + h > window.innerHeight - 12) top = Math.max(12, r.top - h - 6);
+  m.style.left = Math.max(12, left) + "px";
+  m.style.top = top + "px";
+  menuEl = m;
+}
+document.addEventListener("click", e => {
+  if(menuEl && !menuEl.contains(e.target) && !e.target.closest("[data-menu]")) closeMenu();
+});
+window.addEventListener("resize", closeMenu);
+
+/* ---------- 通用弹窗 ---------- */
+function openDialog(opt){
+  const back = document.createElement("div");
+  back.className = "backdrop";
+  const cancelLabel = opt.cancelText || "取消";
+  back.innerHTML =
+    '<div class="dialog" role="dialog" aria-modal="true">' +
+      '<h3></h3>' + (opt.sub ? '<div class="dsub"></div>' : '') +
+      '<div class="dbody"></div>' +
+      '<div class="dialog-foot">' +
+        '<button class="btn" data-cancel></button>' +
+        (opt.hideOk ? '' : '<button class="btn btn-primary" data-ok></button>') +
+      '</div>' +
+    '</div>';
+  const dlg = back.firstChild;
+  dlg.querySelector("h3").textContent = opt.title || "";
+  if(opt.sub) dlg.querySelector(".dsub").textContent = opt.sub;
+  dlg.querySelector(".dbody").innerHTML = opt.body || "";
+  dlg.querySelector("[data-cancel]").textContent = cancelLabel;
+  if(!opt.hideOk){
+    const ok = dlg.querySelector("[data-ok]");
+    ok.textContent = opt.okText || "确定";
+    if(opt.danger) ok.className = "btn btn-primary btn-danger";
+    ok.onclick = () => { if(!opt.onOk || opt.onOk(back, dlg) !== false) close(); };
+  }
+  function close(){ back.remove(); document.removeEventListener("keydown", onKey); }
+  back.querySelector("[data-cancel]").onclick = () => { if(opt.onCancel) opt.onCancel(); close(); };
+  back.addEventListener("mousedown", e => { if(e.target === back) close(); });
+  function onKey(e){ if(e.key === "Escape"){ e.stopPropagation(); close(); } }
+  document.addEventListener("keydown", onKey);
+  document.body.appendChild(back);
+  const first = dlg.querySelector("input,textarea");
+  if(first) setTimeout(()=>first.focus(), 30);
+  return { back, dlg, close };
+}
+
+/* ---------- 首页渲染 ---------- */
+function visibleProjects(){
+  let list = state.projects.filter(p => {
+    if(filter === "archived") return p.archived;
+    if(p.archived) return false;
+    if(filter !== "all" && p.status !== filter) return false;
+    return true;
+  });
+  if(query){
+    const q = query.toLowerCase();
+    list = list.filter(p => (p.name + " " + p.topic + " " + p.tags.join(" ")).toLowerCase().includes(q));
+  }
+  const cmps = {
+    updated: (a,b) => (b.updatedAt||"").localeCompare(a.updatedAt||""),
+    created: (a,b) => (b.createdAt||"").localeCompare(a.createdAt||""),
+    name:    (a,b) => a.name.localeCompare(b.name, "zh"),
+    progress:(a,b) => doneCount(b) - doneCount(a)
+  };
+  list.sort((a,b) => (b.pinned?1:0) - (a.pinned?1:0) || cmps[sortBy](a,b));
+  return list;
+}
+
+function cardHTML(p){
+  const d = doneCount(p), pct = d*10;
+  const barCls = p.status==="done" ? " is-done" : (p.status==="paused" ? " is-paused" : "");
+  const nxCls  = p.status==="done" ? " is-done" : (p.status==="paused" ? " is-paused" : "");
+  const st = STEPS[p.currentStep-1];
+  const next = p.status==="done" ? "十步已全部完成，可查看或导出"
+    : p.status==="paused" ? "已暂停 · 停在第 "+p.currentStep+" 步 "+st.title
+    : (d===0 && !p.steps.some(s=>s.content) ? "还没开始 · 从第 1 步 "+STEPS[0].title+" 开始"
+       : "接着上次：第 "+p.currentStep+" 步 · "+st.title);
+  return '<div class="card'+(p.pinned?" is-pinned":"")+'" data-id="'+p.id+'" tabindex="0" role="button">' +
+    '<div class="card-top"><div class="card-name">'+(p.pinned?'<span class="pin-mark">★ </span>':'')+esc(p.name)+'</div>' +
+    '<div class="card-top-right"><span class="pill '+p.status+'"><i></i>'+LABEL[p.status]+'</span>' +
+    '<button class="icon-btn" data-menu="'+p.id+'" title="更多操作" aria-label="更多操作">' +
+    '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></button></div></div>' +
+    (p.topic ? '<div class="card-topic">主题：'+esc(p.topic)+'</div>' : '') +
+    (p.tags.length ? '<div class="tags">'+p.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join("")+'</div>' : '') +
+    '<div class="progress"><div class="bar'+barCls+'"><i style="width:'+pct+'%"></i></div><em>'+d+' / 10</em></div>' +
+    '<div class="card-foot"><span class="next'+nxCls+'">'+esc(next)+'</span><span class="when">'+fmtWhen(p.updatedAt)+'</span></div>' +
+  '</div>';
+}
+
+function renderHome(){
+  const live = state.projects.filter(p=>!p.archived);
+  const n = k => live.filter(p=>p.status===k).length;
+  const last = state.projects.reduce((a,p)=> (!a || (p.updatedAt||"")>a) ? p.updatedAt : a, "");
+  $("#summary").innerHTML =
+    "共 <b>"+live.length+"</b> 个项目" +
+    "<span>进行中 <b>"+n("active")+"</b></span>" +
+    "<span>已暂停 <b>"+n("paused")+"</b></span>" +
+    "<span>已完成 <b>"+n("done")+"</b></span>" +
+    (state.projects.some(p=>p.archived) ? "<span>已归档 <b>"+state.projects.filter(p=>p.archived).length+"</b></span>" : "") +
+    (last ? '<span style="color:var(--muted)">最近编辑 '+fmtWhen(last)+'</span>' : "");
+
+  const list = visibleProjects();
+  const wrap = $("#groups"), empty = $("#emptyState");
+
+  if(state.projects.length === 0){
+    wrap.hidden = true; wrap.innerHTML = "";
+    empty.hidden = false;
+    empty.innerHTML = '<div class="empty"><h3>还没有学习项目</h3>' +
+      '<p>每开一个新主题，就建一个项目。做到一半可以随时停下，下次点进来接着上次那一步继续。</p>' +
+      '<div class="row"><button class="btn btn-primary" id="e1">新建学习项目</button>' +
+      '<button class="btn" id="e2">先看看示例项目</button></div>' +
+      '<p style="margin:16px 0 0;font-size:12px">数据只保存在这台电脑的这个浏览器里，记得偶尔点右上角「导出全部备份」。</p></div>';
+    $("#e1").onclick = () => editProjectDialog(null);
+    $("#e2").onclick = () => { seedDemo(); };
+    return;
+  }
+
+  const searching = !!query || filter !== "all";
+  const bucket = new Map(state.groups.map(g=>[g.id, []]));
+  list.forEach(p => { if(bucket.has(p.groupId)) bucket.get(p.groupId).push(p); });
+
+  let html = "", shown = 0;
+  state.groups.forEach(g => {
+    const items = bucket.get(g.id) || [];
+    shown += items.length;
+    if(searching && !items.length) return;
+    html += sectionHTML(g, items);
+  });
+  wrap.hidden = false;
+  wrap.innerHTML = html;
+
+  const noneFound = shown === 0;
+  empty.hidden = !noneFound;
+  empty.innerHTML = noneFound
+    ? '<div class="empty" style="margin-top:16px"><h3>没有符合条件的项目</h3><p>换个筛选条件，或者清空搜索框试试。</p></div>'
+    : "";
+
+  wrap.querySelectorAll(".card[data-id]").forEach(el => {
+    const p = getProject(el.dataset.id);
+    el.onclick = e => { if(e.target.closest("[data-menu]")) return; openProject(p.id); };
+    el.onkeydown = e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openProject(p.id); } };
+  });
+  wrap.querySelectorAll("[data-menu]").forEach(b => {
+    b.onclick = e => { e.stopPropagation(); projectMenu(getProject(b.dataset.menu), b); };
+  });
+  wrap.querySelectorAll("[data-gmenu]").forEach(b => {
+    b.onclick = e => { e.stopPropagation(); groupMenu(getGroup(b.dataset.gmenu), b); };
+  });
+  wrap.querySelectorAll("[data-newin]").forEach(b => {
+    b.onclick = e => { e.stopPropagation(); editProjectDialog(null, b.dataset.newin); };
   });
 }
 
-function render() {
-  const s = steps.find((x) => x.id === state.current);
-  const main = el("main");
-  main.innerHTML = "";
-  const card = document.createElement("section");
-  card.className = "card";
-  card.innerHTML = `
-    <div class="step-head">
-      <div>
-        <h2 class="step-title">${s.id}. ${s.title}</h2>
-        <div class="step-purpose">${s.purpose}</div>
-      </div>
-      <div class="pill ${state.done[s.id] ? "done" : "active"}">${state.done[s.id] ? "已完成" : "进行中"}</div>
-    </div>
-    <ul class="guide">
-      ${s.guide.map((g) => `<li>${g}</li>`).join("")}
-    </ul>
-    <div class="grid">
-      <div class="field">
-        <label for="prompt">提示词</label>
-        <textarea id="prompt">${s.prompt(state.topic || "主题")}</textarea>
-      </div>
-      <div class="field">
-        <label for="output">我的成果</label>
-        <textarea id="output" placeholder="把 AI 输出贴进来，或自己写结论">${state.outputs[s.id] || ""}</textarea>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="primary" id="copy">复制提示词</button>
-      <button id="save">保存成果</button>
-      <button class="${state.done[s.id] ? "done" : "ghost"}" id="toggle">${state.done[s.id] ? "标记未完成" : "标记完成"}</button>
-      ${s.id < 10 ? `<button class="ghost" id="next">下一步</button>` : ""}
-    </div>
-  `;
-  main.appendChild(card);
-
-  el("copy").onclick = async () => {
-    await navigator.clipboard.writeText(el("prompt").value);
-    el("copy").textContent = "已复制";
-    setTimeout(() => el("copy").textContent = "复制提示词", 1200);
-  };
-  el("save").onclick = () => {
-    state.outputs[s.id] = el("output").value;
-    saveState();
-    el("save").textContent = "已保存";
-    setTimeout(() => el("save").textContent = "保存成果", 1200);
-  };
-  el("toggle").onclick = () => {
-    state.done[s.id] = !state.done[s.id];
-    saveState();
-    render();
-  };
-  const next = el("next");
-  if (next) next.onclick = () => {
-    state.outputs[s.id] = el("output").value;
-    state.current = Math.min(10, s.id + 1);
-    saveState();
-    render();
-  };
-  renderSteps();
-  updateProgress();
+/* 一个分类分栏 */
+function sectionHTML(g, items){
+  const head = '<div class="group-head">' +
+    '<button class="group-name" data-gmenu="'+g.id+'"><span class="gdot"></span>'+esc(g.name)+'<em>'+items.length+'</em></button>' +
+    '<button class="icon-btn" data-newin="'+g.id+'" title="在这个分类里新建项目">' +
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>' +
+  '</div>';
+  if(!items.length){
+    return '<section class="group">'+head+
+      '<button class="group-empty" data-newin="'+g.id+'">这个分类还是空的 · 点这里在「'+esc(g.name)+'」里新建项目</button></section>';
+  }
+  return '<section class="group">'+head+'<div class="cards">'+items.map(cardHTML).join("")+'</div></section>';
 }
 
-function updateProgress() {
-  const doneCount = steps.filter((s) => state.done[s.id]).length;
-  el("progress").style.width = `${(doneCount / steps.length) * 100}%`;
+/* ---------- 分类管理 ---------- */
+function groupMenu(g, anchor){
+  openMenu(anchor, [
+    { label:"重命名分类", run:() => renameGroupDialog(g) },
+    { label:"在这个分类里新建项目", run:() => editProjectDialog(null, g.id) },
+    "-",
+    { label:"删除这个分类", danger:true, run:() => deleteGroup(g) }
+  ]);
+}
+function renameGroupDialog(g){
+  openDialog({ title:"重命名分类", sub:"当前名称：" + g.name, okText:"保存",
+    body:'<div class="field"><label>分类名称</label><input id="g-name" value="'+esc(g.name)+'" placeholder="例如：学习类、工作、读书"></div>',
+    onOk:(back,dlg)=>{
+      const v = dlg.querySelector("#g-name").value.trim();
+      if(!v){ toast("名称不能为空"); return false; }
+      g.name = v.slice(0,20); saveNow(); renderHome(); toast("分类已改名为「"+g.name+"」");
+    }});
+}
+function newGroupDialog(){
+  openDialog({ title:"新建分类", sub:"把项目分栏摆放，之后可以随时改名。", okText:"创建",
+    body:'<div class="field"><label>分类名称</label><input id="g-name" placeholder="例如：学习类、工作、读书、兴趣">' +
+      '<div class="tip">分类只是摆放位置，不影响项目和里面的十步内容。</div></div>',
+    onOk:(back,dlg)=>{
+      const v = dlg.querySelector("#g-name").value.trim();
+      if(!v){ toast("名称不能为空"); return false; }
+      const g = { id:"g"+uid(), name:v.slice(0,20) };
+      state.groups.push(g); saveNow(); renderHome(); toast("已新建分类「"+g.name+"」");
+    }});
+}
+function deleteGroup(g){
+  if(state.groups.length <= 1){ toast("至少要保留一个分类"); return; }
+  const items = state.projects.filter(p=>p.groupId===g.id);
+  openDialog({ title:"删除分类", sub:"「"+g.name+"」里有 "+items.length+" 个项目", okText:"删除分类", danger:true,
+    body:'<p style="font-size:13px;color:var(--ink-2);margin:0 0 4px">分类会被删除，但里面的项目<b>不会被删除</b>，会挪到下面选的那个分类里。</p>' +
+      '<div class="field" style="margin-top:14px"><label>把项目挪到</label><select id="g-to" class="select" style="width:100%;height:38px">' +
+      state.groups.filter(x=>x.id!==g.id).map(x=>'<option value="'+x.id+'">'+esc(x.name)+'</option>').join("") +
+      '</select></div>',
+    onOk:(back,dlg)=>{
+      const to = dlg.querySelector("#g-to").value;
+      items.forEach(p => p.groupId = to);
+      state.groups = state.groups.filter(x=>x.id!==g.id);
+      saveNow(); renderHome(); toast("已删除分类「"+g.name+"」，里面的项目已挪走");
+    }});
+}
+function moveDialog(p){
+  const cur = getGroup(p.groupId);
+  openDialog({ title:"移动到分类", sub:"「"+p.name+"」现在在「"+(cur?cur.name:"未分类")+"」", okText:"移动",
+    body:'<div class="field"><label>选择分类</label><select id="m-to" class="select" style="width:100%;height:38px">' +
+      state.groups.map(g=>'<option value="'+g.id+'"'+(g.id===p.groupId?" selected":"")+'>'+esc(g.name)+'</option>').join("") +
+      '</select></div>',
+    onOk:(back,dlg)=>{
+      p.groupId = dlg.querySelector("#m-to").value;
+      p.updatedAt = new Date().toISOString();
+      saveNow(); renderHome(); toast("已移动到「"+(getGroup(p.groupId)||{}).name+"」");
+    }});
 }
 
-function download(name, content, type) {
-  const blob = new Blob([content], { type });
+function projectMenu(p, anchor){
+  const items = [
+    { label:"继续编辑", run:() => openProject(p.id) },
+    { label:"重命名 / 编辑信息", run:() => editProjectDialog(p) },
+    { label:"复制项目", run:() => {
+        const c = JSON.parse(JSON.stringify(p));
+        c.id = uid(); c.name = p.name + " 副本"; c.pinned = false;
+        c.createdAt = c.updatedAt = new Date().toISOString();
+        state.projects.unshift(c); saveNow(); renderHome();
+        toast("已复制为「"+c.name+"」");
+      } },
+    { label: p.pinned ? "取消置顶" : "置顶", run:() => { p.pinned = !p.pinned; p.updatedAt = new Date().toISOString(); saveNow(); renderHome(); } },
+    { label:"移动到分类…", run:() => moveDialog(p) },
+    "-",
+    { label:"导出这个项目", run:() => exportDialog(p) },
+    { label: p.archived ? "取消归档" : "归档", run:() => {
+        p.archived = !p.archived; p.updatedAt = new Date().toISOString(); saveNow(); renderHome();
+        toast(p.archived ? "已归档，可在「已归档」里找到" : "已取消归档");
+      } },
+    { label:"删除", danger:true, run:() => deleteProject(p) }
+  ];
+  openMenu(anchor, items);
+}
+
+function deleteProject(p){
+  openDialog({
+    title:"删除项目", sub:"「"+p.name+"」及其十步内容会被删除，可以马上撤销。",
+    body:'<p style="font-size:13px;color:var(--ink-2);margin:0">删除后 8 秒内可以点提示条上的「撤销」恢复。超过时间就只能靠导出过的备份了。</p>',
+    okText:"删除", danger:true,
+    onOk: () => {
+      const idx = state.projects.indexOf(p);
+      state.projects.splice(idx, 1);
+      if(curId === p.id){ curId = null; location.hash = "#/"; }
+      saveNow(); renderHome();
+      toast("已删除「"+p.name+"」", { label:"撤销", run:() => {
+        state.projects.splice(Math.min(idx, state.projects.length), 0, p);
+        saveNow(); renderHome();
+      }});
+    }
+  });
+}
+
+/* ---------- 新建 / 编辑项目 ---------- */
+function editProjectDialog(p, presetGroupId){
+  const isNew = !p;
+  const d = p || { name:"", topic:"", tags:[], groupId: presetGroupId || (state.groups[0]||{}).id || "" };
+  openDialog({
+    title: isNew ? "新建学习项目" : "编辑项目信息",
+    sub: isNew ? "给这次要研究或学习的主题起个名字，之后可以随时改。" : null,
+    okText: isNew ? "创建" : "保存",
+    body:
+      '<div class="field"><label>项目名</label><input id="f-name" placeholder="例如：用 RAG 构建知识库" value="'+esc(d.name)+'"></div>' +
+      '<div class="field"><label>学习主题（会填进十步的提示词里）</label><input id="f-topic" placeholder="例如：检索增强生成" value="'+esc(d.topic)+'">' +
+      '<div class="tip">十步的提示词里都有【主题】占位，这里填的词会替换进去。</div></div>' +
+      '<div class="field"><label>分类</label><select id="f-group" class="select" style="width:100%;height:38px">' +
+        state.groups.map(g=>'<option value="'+g.id+'"'+(g.id===d.groupId?" selected":"")+'>'+esc(g.name)+'</option>').join("") +
+      '</select></div>' +
+      '<div class="field"><label>标签（用逗号分隔，可留空）</label><input id="f-tags" placeholder="例如：AI, 检索, 工程" value="'+esc(d.tags.join(", "))+'"></div>',
+    onOk: (back, dlg) => {
+      const name = dlg.querySelector("#f-name").value.trim() || "未命名项目";
+      const topic = dlg.querySelector("#f-topic").value.trim();
+      const gid = dlg.querySelector("#f-group").value;
+      const tags = dlg.querySelector("#f-tags").value.split(/[,，]/).map(s=>s.trim()).filter(Boolean).slice(0,8);
+      if(isNew){
+        const np = blankProject(name, topic, gid);
+        np.tags = tags;
+        np.status = "active";
+        state.projects.unshift(np);
+        saveNow(); renderHome();
+        toast("已创建「"+name+"」，开始第 1 步");
+        openProject(np.id);
+      } else {
+        p.name = name; p.topic = topic; p.tags = tags; p.groupId = gid;
+        p.updatedAt = new Date().toISOString();
+        saveNow(); renderHome(); if(curId===p.id) renderProject();
+        toast("已保存");
+      }
+    }
+  });
+}
+
+/* ---------- 示例项目 ---------- */
+function seedDemo(){
+  const mk = (name, topic, tags, status, step, doneN, notes, agoMs) => {
+    const p = blankProject(name, topic);
+    p.tags = tags; p.status = status; p.currentStep = step; p.notes = notes || "";
+    for(let i=0;i<doneN;i++) p.steps[i].done = true;
+    if(agoMs){
+      const d = new Date(Date.now() - agoMs);
+      p.createdAt = new Date(d.getTime() - 86400000*9).toISOString();
+      p.updatedAt = d.toISOString();
+    }
+    state.projects.push(p);
+    return p;
+  };
+  const a = mk("用 RAG 构建知识库","检索增强生成",["AI","检索","工程"],"active",6,5,"疑问：rerank 什么时候值得上？\n待补：找一篇评估检索质量的综述", 0);
+  a.steps[0].content = `实践者（真做过 RAG 系统的人）：别一上来就上向量库，先用关键词检索把闭环跑通，再逐层替换。最强证据是很多团队两周内就能做出可用原型。
+学者：瓶颈通常不在生成，而在检索召回；先量化召回率再谈效果。最容易被忽略的一点是——检索回来的内容本身就可能过时或出错。
+怀疑者：很多场景根本不需要 RAG，把文档直接放进长上下文就够了。只有他会说：大多数 RAG 失败案例，本质是"不该用 RAG"。
+经济学家：真正的成本在索引维护和效果评估，不在模型调用。
+历史学家：这和九十年代的全文检索加 FAQ 系统是同一类问题的轮回，失败原因也高度相似。`;
+  a.steps[5].content = `第 1 级 完全初学者 —— 知道 RAG = 先查资料，再让模型回答
+  掌握标准：能说清 RAG 和「把整篇文档塞进提示词」的区别
+  常见错误：以为 RAG 就是让模型联网
+
+第 2 级 基本理解 —— 掌握 切分 → 向量化 → 检索 → 拼接 → 生成 五个环节
+  里程碑：能画出完整流程图，并说清每一步在干什么
+  自测：为什么必须切分？切分粒度会影响什么？
+
+第 3 级 实际使用者 —— 能用现成框架搭出一个能问答的小系统
+  动手练习：把 20 页文档切块入库，做到能回答文档里的具体问题
+  常见错误：chunk 切太碎导致答非所问；只做向量检索、不做关键词兜底
+
+第 4 级 问题解决者 —— 能定位「检索不到 / 答非所问 / 幻觉」三类问题
+  里程碑：对同一个问题分别调整 chunk 大小、top-k、rerank，说清每次变化的因果
+
+第 5 级 自信实践者 —— 能针对业务设计检索策略并评估效果
+  进入下一级前的自测：为什么要 rerank？召回率和精确率怎么权衡？怎么判断"检索没问题、是生成的问题"？`;
+  mk("卡拉马佐夫兄弟 精读","俄国文学",["文学","笔记"],"paused",2,1,"读到第五卷，先停一下", 26*3600*1000);
+  mk("费曼学习法实践","学习方法",["方法论"],"done",10,10,"", 6*86400*1000);
+  ensureGroups();
+  saveNow(); renderHome();
+  toast("已载入 3 个示例项目，随便点着看看");
+}
+
+/* ---------- 项目页 ---------- */
+function openProject(id, step){
+  const p = getProject(id);
+  if(!p) return;
+  location.hash = "#/p/" + id + "/" + clamp(step || p.currentStep || 1, 1, 10);
+}
+function setStep(n, replace){
+  const p = getProject(curId); if(!p) return;
+  curStep = clamp(n, 1, 10);
+  p.currentStep = curStep;
+  scheduleSave();
+  renderProject();
+  const h = "#/p/" + p.id + "/" + curStep;
+  if(replace) history.replaceState(null, "", h); else history.replaceState(null, "", h);
+}
+
+function renderProject(){
+  const p = getProject(curId);
+  if(!p){ location.hash = "#/"; return; }
+  const d = doneCount(p);
+
+  $("#sbName").textContent = p.name;
+  const sb = $("#sbStatus");
+  sb.className = "pill " + p.status;
+  sb.innerHTML = "<i></i><span>" + LABEL[p.status] + "</span>";
+  sb.onclick = () => {
+    openMenu(sb, ["idle","active","paused","done"].map(k => ({
+      label: (k===p.status ? "● " : "") + LABEL[k],
+      run: () => { p.status = k; p.updatedAt = new Date().toISOString(); saveNow(); renderProject(); }
+    })));
+  };
+  $("#btnEditInfo").onclick = () => editProjectDialog(p);
+  $("#btnExportOne").onclick = () => exportDialog(p);
+
+  $("#prName").textContent = p.name;
+  $("#prTopic").textContent = p.topic ? ("学习主题：" + p.topic) : "（还没填学习主题，点右上角「编辑信息」补上，提示词会自动套用）";
+  $("#prTags").innerHTML = p.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join("") +
+    '<button class="tag" id="tagAdd" style="border:1px dashed var(--line-2);background:#fff;cursor:pointer">+ 标签</button>';
+  $("#prDone").textContent = d;
+  $("#prBar").style.width = (d*10) + "%";
+  $("#prBarWrap").className = "bar" + (p.status==="done" ? " is-done" : (p.status==="paused" ? " is-paused" : ""));
+  const ta = $("#tagAdd");
+  if(ta) ta.onclick = () => {
+    const v = prompt("加一个标签（例如：AI、数学、读书）");
+    if(v && v.trim()){ p.tags = p.tags.concat(v.trim().split(/[,，]/).map(s=>s.trim()).filter(Boolean)).slice(0,8); saveNow(); renderProject(); }
+  };
+
+  $("#stepsNav").innerHTML = STEPS.map(s => {
+    const cls = p.steps[s.id-1].done ? "done" : (s.id === curStep ? "current" : "");
+    return '<button class="chip '+cls+'" data-step="'+s.id+'"><span class="n">'+s.id+'</span>'+s.title+'</button>';
+  }).join("");
+  $("#stepsNav").querySelectorAll("[data-step]").forEach(c => {
+    c.onclick = () => setStep(parseInt(c.dataset.step,10));
+  });
+
+  const s = STEPS[curStep-1];
+  $("#stNo").textContent = s.id;
+  $("#stTitle").textContent = s.title;
+  $("#stPurpose").textContent = s.purpose;
+  $("#stGuide").innerHTML = s.guide.map(g=>"<li>"+esc(g)+"</li>").join("");
+  $("#stPrompt").textContent = s.prompt.replace("{T}", p.topic || "主题");
+  const rb = $("#resultBox");
+  rb.value = p.steps[curStep-1].content || "";
+  const stEl = $("#stState");
+  if(p.steps[curStep-1].done){ stEl.className = "pill done"; stEl.innerHTML = "<i></i><span>已完成</span>"; }
+  else if(curStep === p.currentStep){ stEl.className = "pill active"; stEl.innerHTML = "<i></i><span>进行中</span>"; }
+  else { stEl.className = "pill idle"; stEl.innerHTML = "<i></i><span>未开始</span>"; }
+
+  const bm = $("#btnMark");
+  if(p.steps[curStep-1].done){ bm.className = "btn btn-sm btn-ok"; bm.textContent = "已完成 ✓（点击取消）"; }
+  else { bm.className = "btn btn-sm"; bm.textContent = "标记完成"; }
+
+  $("#btnPrev").disabled = curStep <= 1;
+  $("#btnNext").disabled = curStep >= 10;
+  $("#notesBox").value = p.notes || "";
+  $("#notesCard").open = !!(p.notes && p.notes.trim());
+  setPane(pane);
+  renderFiles();
+  markSaved();
+}
+
+/* ============================================================
+   附件：文件本体存 IndexedDB，localStorage 只存清单（防止爆掉配额）
+   ============================================================ */
+const IDB_NAME = "tenx-files", IDB_STORE = "files";
+let idbPromise = null;
+function idb(){
+  if(!idbPromise){
+    idbPromise = new Promise((res, rej) => {
+      if(!window.indexedDB){ rej(new Error("此浏览器不支持 IndexedDB")); return; }
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if(!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE, { keyPath:"id" });
+      };
+      req.onsuccess = () => res(req.result);
+      req.onerror = () => rej(req.error);
+    });
+  }
+  return idbPromise;
+}
+async function idbPut(rec){
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).put(rec);
+    tx.oncomplete = () => res(true);
+    tx.onerror = () => rej(tx.error);
+  });
+}
+async function idbGet(id){
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const rq = db.transaction(IDB_STORE, "readonly").objectStore(IDB_STORE).get(id);
+    rq.onsuccess = () => res(rq.result || null);
+    rq.onerror = () => rej(rq.error);
+  });
+}
+async function idbAllKeys(){
+  const db = await idb();
+  return new Promise((res) => {
+    const rq = db.transaction(IDB_STORE, "readonly").objectStore(IDB_STORE).getAllKeys();
+    rq.onsuccess = () => res(rq.result || []);
+    rq.onerror = () => res([]);
+  });
+}
+async function idbDel(id){
+  const db = await idb();
+  return new Promise((res) => {
+    const tx = db.transaction(IDB_STORE, "readwrite");
+    tx.objectStore(IDB_STORE).delete(id);
+    tx.oncomplete = () => res(true);
+    tx.onerror = () => res(false);
+  });
+}
+/* 有些环境用不了 IndexedDB（例如直接用 file:// 双击打开本地文件）。
+   这时自动退回到「把文件内嵌进项目数据」，功能照样能用，只是容量小一些。 */
+let idbOK = null;
+function idbAvailable(){
+  if(idbOK !== null) return Promise.resolve(idbOK);
+  return new Promise(res => {
+    let settled = false;
+    const done = v => { if(!settled){ settled = true; idbOK = v; res(v); } };
+    try {
+      if(!window.indexedDB){ done(false); return; }
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => {
+        try {
+          const db = req.result;
+          if(!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE, { keyPath:"id" });
+        } catch(e){}
+      };
+      req.onsuccess = () => done(true);
+      req.onerror = () => done(false);
+      req.onblocked = () => done(false);
+      setTimeout(() => done(false), 1500);
+    } catch(e){ done(false); }
+  });
+}
+/* 清理没有被任何项目引用的文件 */
+async function gcFiles(){
+  try {
+    if(!(await idbAvailable())) return;
+    const used = new Set();
+    state.projects.forEach(p => p.steps.forEach(s => (s.files||[]).forEach(f => used.add(f.id))));
+    const keys = await idbAllKeys();
+    let n = 0;
+    for(const k of keys){ if(!used.has(k)){ await idbDel(k); n++; } }
+    if(n) console.log("[清理] 删除无用附件", n);
+  } catch(e){}
+}
+
+const fmtSize = n => n < 1024 ? n+" B" : (n < 1048576 ? Math.round(n/1024)+" KB" : (n/1048576).toFixed(1)+" MB");
+const isImg = t => /^image\//.test(t || "");
+
+/* 图片太大就压缩，省空间 */
+function maybeCompress(file){
+  if(!isImg(file.type) || /gif|svg/i.test(file.type)) return Promise.resolve(file);
+  return new Promise(res => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 1800;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(w <= MAX && h <= MAX && file.size < 600*1024){ URL.revokeObjectURL(url); res(file); return; }
+      const k = Math.min(1, MAX/Math.max(w,h));
+      w = Math.round(w*k); h = Math.round(h*k);
+      const cv = document.createElement("canvas");
+      cv.width = w; cv.height = h;
+      cv.getContext("2d").drawImage(img, 0, 0, w, h);
+      cv.toBlob(b => { URL.revokeObjectURL(url); res(b || file); }, "image/jpeg", 0.86);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); res(file); };
+    img.src = url;
+  });
+}
+
+async function addFiles(fileList){
+  const p = getProject(curId); if(!p || !fileList || !fileList.length) return;
+  const step = p.steps[curStep-1];
+  const useIdb = await idbAvailable();
+  let ok = 0, skipped = 0;
+  for(const file of Array.from(fileList)){
+    if(file.size > 12*1024*1024){ skipped++; continue; }
+    try {
+      const blob = await maybeCompress(file);
+      const id = "f" + uid();
+      const name = file.name || (isImg(blob.type) ? ("截图-"+stamp()+".jpg") : "文件");
+      const meta = { id, name, type:blob.type||file.type||"", size:blob.size };
+      if(useIdb){
+        await idbPut({ id, projectId:p.id, step:curStep, name, type:meta.type, size:meta.size, blob, createdAt:new Date().toISOString() });
+      } else {
+        meta.dataUrl = await blobToDataURL(blob);
+      }
+      step.files.push(meta);
+      ok++;
+    } catch(e){ skipped++; }
+  }
+  if(ok){
+    p.updatedAt = new Date().toISOString();
+    saveNow(); renderFiles();
+    toast("已添加 " + ok + " 个附件" + (skipped ? "（" + skipped + " 个太大，跳过）" : "") +
+      (useIdb ? "" : "　·　本地预览模式：附件存在浏览器里，容量有限"));
+  } else if(skipped){
+    toast("有 " + skipped + " 个文件没能添加（可能超过 12MB，或浏览器拒绝了本地存储）");
+  }
+}
+
+function removeFile(fid){
+  const p = getProject(curId); if(!p) return;
+  const step = p.steps[curStep-1];
+  const i = (step.files||[]).findIndex(f => f.id === fid);
+  if(i < 0) return;
+  const [f] = step.files.splice(i, 1);
+  saveNow(); renderFiles();
+  toast("已移除「"+f.name+"」", { label:"撤销", run:() => { step.files.splice(i, 0, f); saveNow(); renderFiles(); } });
+}
+
+function findFileMeta(fid){
+  for(const p of state.projects){
+    for(const s of p.steps){
+      const f = (s.files || []).find(x => x.id === fid);
+      if(f) return f;
+    }
+  }
+  return null;
+}
+function openBlob(blob, type, name){
+  const url = URL.createObjectURL(blob);
+  if(isImg(type)){
+    const lb = document.createElement("div");
+    lb.className = "lightbox";
+    lb.innerHTML = '<img alt="">';
+    lb.firstChild.src = url;
+    lb.onclick = () => { lb.remove(); URL.revokeObjectURL(url); };
+    document.body.appendChild(lb);
+  } else {
+    const a = document.createElement("a");
+    a.href = url; a.download = name || "file";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }
+}
+async function openFile(fid){
+  try {
+    const meta = findFileMeta(fid);
+    if(meta && meta.dataUrl){ openBlob(dataURLtoBlob(meta.dataUrl), meta.type, meta.name); return; }
+    const rec = await idbGet(fid);
+    if(!rec){ toast("这个附件已经不在本地了（可能被清理过）"); return; }
+    openBlob(rec.blob, rec.type, rec.name);
+  } catch(e){ toast("打开失败：" + e.message); }
+}
+
+async function renderFiles(){
+  const p = getProject(curId); if(!p) return;
+  const box = $("#files"); if(!box) return;
+  const list = p.steps[curStep-1].files || [];
+  if(!list.length){ box.innerHTML = ""; return; }
+  box.innerHTML = list.map(f => {
+    const inner = isImg(f.type)
+      ? '<img data-fid="'+f.id+'" alt="'+esc(f.name)+'">'
+      : '<div class="ficon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3v5h5"/><path d="M6 3h8l5 5v13H6z"/></svg></div>';
+    return '<div class="file">' + inner +
+      '<button class="fx" data-fdel="'+f.id+'" title="移除">✕</button>' +
+      '<div class="fb" data-fopen="'+f.id+'"><div class="fn">'+esc(f.name)+'</div>' +
+      '<div class="fs">'+fmtSize(f.size)+'</div></div></div>';
+  }).join("");
+  box.querySelectorAll("[data-fdel]").forEach(b => b.onclick = e => { e.stopPropagation(); removeFile(b.dataset.fdel); });
+  box.querySelectorAll("[data-fopen]").forEach(b => b.onclick = () => openFile(b.dataset.fopen));
+  for(const f of list){
+    if(!isImg(f.type)) continue;
+    const img = box.querySelector('img[data-fid="'+f.id+'"]');
+    if(!img) continue;
+    if(f.dataUrl){ img.src = f.dataUrl; img.onclick = () => openFile(f.id); continue; }
+    try {
+      const rec = await idbGet(f.id);
+      if(rec && rec.blob){ img.src = URL.createObjectURL(rec.blob); img.onclick = () => openFile(f.id); }
+    } catch(e){}
+  }
+}
+
+/* ============================================================
+   总文档：把十步规整成一份完整文档
+   ============================================================ */
+function setPane(v){
+  pane = v;
+  const flow = $("#paneFlow"), doc = $("#paneDoc");
+  if(!flow || !doc) return;
+  flow.hidden = (v !== "flow");
+  doc.hidden = (v !== "doc");
+  document.querySelectorAll("#viewTabs button").forEach(b => b.classList.toggle("active", b.dataset.v === v));
+  if(v === "doc") renderDoc();
+}
+
+function renderDoc(){
+  const p = getProject(curId); if(!p) return;
+  const d = doneCount(p);
+  const g = getGroup(p.groupId);
+  const toc = STEPS.map(s => '<div>' + (p.steps[s.id-1].done ? "✓ " : "") +
+    '<a href="#dstep'+s.id+'">' + s.id + '. ' + esc(s.title) + '</a></div>').join("");
+  const blocks = STEPS.map(s => {
+    const c = p.steps[s.id-1];
+    const files = c.files || [];
+    return '<section class="dstep" id="dstep'+s.id+'">' +
+      '<h2><span class="n">'+s.id+'</span>'+esc(s.title) +
+        (c.done ? ' <span class="pill done"><i></i>已完成</span>' : '') + '</h2>' +
+      '<p class="purpose">'+esc(s.purpose)+'</p>' +
+      '<h4>提示词</h4><div class="pre">'+esc(s.prompt.replace("{T}", topicOf(p)))+'</div>' +
+      '<h4>我的成果</h4>' + (c.content && c.content.trim()
+        ? '<div class="res">'+esc(c.content)+'</div>'
+        : '<div class="res empty">（这一步还没有填写）</div>') +
+      (files.length ? '<h4>附件（'+files.length+'）</h4><div class="files">' + files.map(f =>
+          '<div class="file"><div class="fb"><div class="fn">'+esc(f.name)+'</div><div class="fs">'+fmtSize(f.size)+'</div></div></div>').join("") + '</div>' : '') +
+    '</section>';
+  }).join("");
+  $("#paneDoc").innerHTML =
+    '<div class="doc" id="docBody">' +
+      '<h1>'+esc(p.name)+'</h1>' +
+      '<div class="doc-meta">学习主题：'+esc(p.topic||"—")+'　·　分类：'+esc(g?g.name:"—")+'　·　状态：'+LABEL[p.status] +
+        '　·　已完成 '+d+' / 10 步　·　生成时间：'+stamp()+'</div>' +
+      '<div class="toc"><b>目录</b>' + toc + '</div>' +
+      blocks +
+      (p.notes && p.notes.trim() ? '<section class="dstep"><h2>项目备注</h2><div class="res">'+esc(p.notes)+'</div></section>' : '') +
+    '</div>' +
+    '<div class="doc-tools">' +
+      '<button class="btn btn-primary btn-sm" id="docCopy">复制全文</button>' +
+      '<button class="btn btn-sm" id="docMd">导出 Markdown</button>' +
+      '<button class="btn btn-sm" id="docHtml">导出网页</button>' +
+      '<button class="btn btn-sm" id="docTxt">导出纯文本</button>' +
+      '<button class="btn btn-sm" id="docPrint">打印 / 存成 PDF</button>' +
+    '</div>';
+  $("#docCopy").onclick = () => copyText(docPlain(p));
+  $("#docMd").onclick   = () => { download(safeName(p.name)+"-"+stamp()+".md", mdFor(p), "text/markdown;charset=utf-8"); toast("已导出 Markdown"); };
+  $("#docHtml").onclick = () => { download(safeName(p.name)+"-"+stamp()+".html", htmlFor(p), "text/html;charset=utf-8"); toast("已导出网页"); };
+  $("#docTxt").onclick  = () => { download(safeName(p.name)+"-"+stamp()+".txt", txtFor(p), "text/plain;charset=utf-8"); toast("已导出纯文本"); };
+  $("#docPrint").onclick = () => { toast("在打印窗口里把目标选成「另存为 PDF」"); setTimeout(()=>window.print(), 150); };
+}
+
+/* 纯文本版的总文档（用于复制全文） */
+function docPlain(p){
+  const d = doneCount(p);
+  let out = p.name + "\n" + "=".repeat(Math.max(4, p.name.length*2)) + "\n";
+  out += "学习主题：" + (p.topic||"—") + "　状态：" + LABEL[p.status] + "　已完成 " + d + "/10 步\n\n";
+  out += "目录\n" + STEPS.map(s => "  " + s.id + ". " + s.title + (p.steps[s.id-1].done ? " ✓" : "")).join("\n") + "\n\n";
+  STEPS.forEach(s => {
+    const c = p.steps[s.id-1];
+    out += "\n" + "─".repeat(46) + "\n第 " + s.id + " 步 · " + s.title + (c.done ? "（已完成）" : "") + "\n";
+    out += "说明：" + s.purpose + "\n\n【提示词】\n" + s.prompt.replace("{T}", topicOf(p)) + "\n\n【我的成果】\n";
+    out += (c.content && c.content.trim() ? c.content : "（还没填）") + "\n";
+    const files = (c.files||[]);
+    if(files.length) out += "\n【附件】" + files.map(f => f.name + "（" + fmtSize(f.size) + "）").join("、") + "\n";
+  });
+  if(p.notes && p.notes.trim()) out += "\n" + "─".repeat(46) + "\n项目备注\n" + p.notes + "\n";
+  return out;
+}
+function copyText(t){
+  const done = () => toast("全文已复制，可以直接粘到别的地方");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done, () => fallbackCopyText(t, done));
+  } else fallbackCopyText(t, done);
+}
+function fallbackCopyText(text, cb){
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); cb(); } catch(e){ toast("复制失败，请手动选中复制"); }
+  ta.remove();
+}
+
+/* ---------- 导出 ---------- */
+function topicOf(p){ return p.topic || p.name || "主题"; }
+function mdFor(p){
+  const d = doneCount(p);
+  let out = "# " + p.name + "\n\n";
+  out += "- 学习主题：" + (p.topic || "—") + "\n";
+  out += "- 标签：" + (p.tags.length ? p.tags.join(" / ") : "—") + "\n";
+  out += "- 状态：" + LABEL[p.status] + "\n";
+  out += "- 进度：已完成 " + d + " / 10 步\n";
+  out += "- 创建时间：" + String(p.createdAt).slice(0,10) + "\n";
+  out += "- 最后编辑：" + String(p.updatedAt).slice(0,10) + "\n\n";
+  out += "## 目录\n\n";
+  STEPS.forEach(s => {
+    const done = p.steps[s.id-1].done ? " ✅" : "";
+    out += (s.id) + ". " + s.title + done + "\n";
+  });
+  out += "\n---\n\n";
+  STEPS.forEach(s => {
+    const c = p.steps[s.id-1];
+    out += "## " + s.id + ". " + s.title + (c.done ? "（已完成）" : "") + "\n\n";
+    out += "> " + s.purpose + "\n\n";
+    out += "**提示词**\n\n```\n" + s.prompt.replace("{T}", topicOf(p)) + "\n```\n\n";
+    out += "**我的成果**\n\n" + (c.content && c.content.trim() ? c.content : "_（还没填）_") + "\n\n";
+    const fl = (c.files || []);
+    if(fl.length) out += "**附件**：" + fl.map(f => f.name + "（" + fmtSize(f.size) + "）").join("、") + "\n\n";
+  });
+  if(p.notes && p.notes.trim()) out += "## 项目备注\n\n" + p.notes + "\n";
+  return out;
+}
+function txtFor(p){
+  const d = doneCount(p);
+  let out = p.name + "\n" + "=".repeat(Math.max(4, p.name.length*2)) + "\n\n";
+  out += "学习主题：" + (p.topic || "—") + "　状态：" + LABEL[p.status] + "　进度：" + d + "/10\n\n";
+  STEPS.forEach(s => {
+    const c = p.steps[s.id-1];
+    out += "\n【第 " + s.id + " 步】" + s.title + (c.done ? "（已完成）" : "") + "\n";
+    out += "说明：" + s.purpose + "\n";
+    out += "提示词：\n" + s.prompt.replace("{T}", topicOf(p)) + "\n";
+    out += "我的成果：\n" + (c.content && c.content.trim() ? c.content : "（还没填）") + "\n";
+    const fl2 = (c.files || []);
+    if(fl2.length) out += "附件：" + fl2.map(f => f.name + "（" + fmtSize(f.size) + "）").join("、") + "\n";
+    out += "-".repeat(48) + "\n";
+  });
+  if(p.notes && p.notes.trim()) out += "\n项目备注：\n" + p.notes + "\n";
+  return out;
+}
+function htmlFor(p){
+  const d = doneCount(p);
+  const blocks = STEPS.map(s => {
+    const c = p.steps[s.id-1];
+    return '<section><h2>' + s.id + '. ' + esc(s.title) + (c.done ? ' <span class="tag">已完成</span>' : '') + '</h2>' +
+      '<p class="purpose">' + esc(s.purpose) + '</p>' +
+      '<h3>提示词</h3><pre>' + esc(s.prompt.replace("{T}", topicOf(p))) + '</pre>' +
+      '<h3>我的成果</h3><div class="res">' + (c.content && c.content.trim() ? esc(c.content) : '<em>（还没填）</em>') + '</div>' +
+      ((c.files||[]).length ? '<h3>附件</h3><ul class="flist">' + (c.files||[]).map(f => '<li>' + esc(f.name) + '（' + fmtSize(f.size) + '）</li>').join("") + '</ul>' : '') +
+      '</section>';
+  }).join("");
+  return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>' + esc(p.name) + '</title>' +
+    '<style>body{max-width:820px;margin:40px auto;padding:0 20px;font:15px/1.8 system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:#1f2937;background:#fff}' +
+    'h1{font-size:26px;margin:0 0 6px}.meta{color:#6b7280;font-size:13px;margin-bottom:28px}' +
+    'h2{font-size:18px;margin:34px 0 8px;padding-top:18px;border-top:1px solid #e5e7eb}.purpose{color:#4b5563;font-size:14px}' +
+    'h3{font-size:13px;color:#6b7280;margin:16px 0 6px;font-weight:600}' +
+    'pre{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:14px;white-space:pre-wrap;font:13px/1.75 inherit}' +
+    '.res{white-space:pre-wrap;border-left:3px solid #dbeafe;padding-left:14px}' +
+    '.tag{font-size:11px;background:#ecfdf5;color:#0b7a56;border-radius:99px;padding:2px 8px;font-weight:400;vertical-align:middle}' +
+    'footer{margin-top:48px;color:#9ca3af;font-size:12px;text-align:center}</style></head><body>' +
+    '<h1>' + esc(p.name) + '</h1><div class="meta">学习主题：' + esc(p.topic || "—") + '　·　状态：' + LABEL[p.status] +
+    '　·　已完成 ' + d + ' / 10 步　·　导出时间：' + stamp() + '</div>' + blocks +
+    (p.notes && p.notes.trim() ? '<section><h2>项目备注</h2><div class="res">' + esc(p.notes) + '</div></section>' : '') +
+    '<footer>由「10倍速学习闭环」导出</footer></body></html>';
+}
+function download(filename, text, mime){
+  const blob = new Blob([text], { type: mime || "text/plain;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(a.href);
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
 }
 
-function exportMd() {
-  let out = `# 10倍速学习闭环\n\n## 主题\n\n${state.topic || "未填写"}\n\n`;
-  steps.forEach((s) => {
-    out += `## ${s.id}. ${s.title}\n\n${state.done[s.id] ? "状态：已完成" : "状态：进行中"}\n\n`;
-    out += `### 提示词\n\n${s.prompt(state.topic || "主题")}\n\n`;
-    out += `### 我的成果\n\n${state.outputs[s.id] || "（待补充）"}\n\n`;
+function blobToDataURL(blob){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(blob);
   });
-  download("10x-learning-workbook.md", out, "text/markdown");
+}
+function dataURLtoBlob(durl){
+  const parts = String(durl).split(",");
+  const mime = (parts[0].match(/:(.*?);/) || [])[1] || "";
+  const bin = atob(parts[1] || "");
+  const arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+/* 打包时把附件内容一并带上，这样备份才是完整的 */
+async function packProject(p){
+  const out = JSON.parse(JSON.stringify(p));
+  for(const step of out.steps){
+    for(const f of (step.files || [])){
+      if(f.dataUrl) continue;   // 本地预览模式下内容已经内嵌在里面了
+      try {
+        const rec = await idbGet(f.id);
+        if(rec && rec.blob) f.dataUrl = await blobToDataURL(rec.blob);
+      } catch(e){}
+    }
+  }
+  return out;
+}
+async function packState(){
+  const projects = [];
+  for(const p of state.projects) projects.push(await packProject(p));
+  return { version:3, exportedAt:new Date().toISOString(), groups:state.groups, settings:state.settings, projects };
 }
 
-function exportJson() {
-  download("10x-learning-workbook.json", JSON.stringify(state, null, 2), "application/json");
+function exportDialog(p){
+  const one = !!p;
+  openDialog({
+    title: one ? "导出这个项目" : "导出全部项目",
+    sub: one ? ("「"+p.name+"」") : (state.projects.length + " 个项目 + 所有附件，打包成一个 JSON 备份"),
+    okText:"下载", hideOk: !one,
+    body: one ? '<div class="fmt-list">' +
+      '<label class="fmt"><input type="radio" name="fmt" value="md" checked><span><b>Markdown（.md）</b><em>适合当笔记，能贴进别的工具继续加工</em></span></label>' +
+      '<label class="fmt"><input type="radio" name="fmt" value="html"><span><b>网页（.html）</b><em>自带排版的单页文件，双击就能看，也方便打印成 PDF</em></span></label>' +
+      '<label class="fmt"><input type="radio" name="fmt" value="txt"><span><b>纯文本（.txt）</b><em>最通用，任何设备都能打开</em></span></label>' +
+      '<label class="fmt"><input type="radio" name="fmt" value="json"><span><b>JSON（.json）</b><em>含附件的完整数据，可以再导入回本工具</em></span></label>' +
+    '</div>' : '<p style="font-size:13px;color:var(--ink-2);margin:0 0 10px">备份包含全部项目的十步内容、备注、标签、状态和<b>附件</b>。换电脑或清缓存后，用首页的「导入备份」就能恢复。</p>' +
+      '<p style="font-size:12.5px;color:var(--muted);margin:0">附件多的话文件会比较大，导出时请稍等。</p>',
+    onOk: async (back, dlg) => {
+      if(!one){
+        toast("正在打包附件，请稍等…");
+        const data = await packState();
+        download("学习项目备份-" + stamp() + ".json", JSON.stringify(data, null, 2), "application/json");
+        toast("已导出 " + state.projects.length + " 个项目的完整备份");
+        return;
+      }
+      const fmt = (dlg.querySelector('input[name="fmt"]:checked')||{}).value || "md";
+      const base = safeName(p.name) + "-" + stamp();
+      if(fmt === "md")   download(base + ".md",   mdFor(p),   "text/markdown;charset=utf-8");
+      if(fmt === "html") download(base + ".html", htmlFor(p), "text/html;charset=utf-8");
+      if(fmt === "txt")  download(base + ".txt",  txtFor(p),  "text/plain;charset=utf-8");
+      if(fmt === "json"){
+        toast("正在打包附件，请稍等…");
+        download(base + ".json", JSON.stringify(await packProject(p), null, 2), "application/json");
+      }
+      toast("已导出「" + p.name + "」");
+    }
+  });
 }
 
-el("apply-topic").onclick = () => {
-  state.topic = el("topic").value.trim();
-  saveState();
-  render();
-};
-el("topic").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") el("apply-topic").click();
-});
-el("export-md").onclick = exportMd;
-el("export-json").onclick = exportJson;
-el("reset").onclick = () => {
-  if (!confirm("确定要清空所有记录吗？")) return;
-  state.topic = "";
-  state.outputs = {};
-  state.done = {};
-  state.current = 1;
-  el("topic").value = "";
-  saveState();
-  render();
-};
+/* ---------- 导入备份 ---------- */
+function importFile(file){
+  const r = new FileReader();
+  r.onload = async () => {
+    let data;
+    try { data = JSON.parse(r.result); } catch(e){ toast("这个文件不是有效的 JSON，导入失败"); return; }
+    let incoming = [];
+    if(Array.isArray(data)) incoming = data;
+    else if(Array.isArray(data.projects)) incoming = data.projects;
+    else if(data && data.steps) incoming = [data];
+    if(!incoming.length){ toast("这个文件里没有找到项目数据"); return; }
 
-loadState();
-render();
+    if(Array.isArray(data.groups)){
+      data.groups.forEach(g => {
+        if(g && g.id && !state.groups.some(x => x.id === g.id))
+          state.groups.push({ id:String(g.id), name:(String(g.name||"").trim() || "未分类").slice(0,20) });
+      });
+    }
+
+    let added = 0, replaced = 0, fileCount = 0;
+    for(const raw of incoming){
+      const p = normalize(raw);
+      for(const step of p.steps){
+        for(const f of (step.files || [])){
+          const src = (raw.steps || []).reduce((acc, s) => acc || ((s.files||[]).find(x => x.id === f.id) || null), null);
+          if(src && src.dataUrl){
+            try {
+              if(await idbAvailable()){
+                const blob = dataURLtoBlob(src.dataUrl);
+                const nid = "f" + uid();
+                await idbPut({ id:nid, projectId:p.id, name:f.name, type:f.type || blob.type, size:blob.size, blob, createdAt:new Date().toISOString() });
+                f.id = nid;
+                delete f.dataUrl;
+              } else {
+                f.dataUrl = src.dataUrl;
+              }
+              fileCount++;
+            } catch(e){}
+          }
+        }
+      }
+      const i = state.projects.findIndex(x => x.id === p.id);
+      if(i >= 0){ state.projects[i] = p; replaced++; }
+      else { state.projects.push(p); added++; }
+    }
+    ensureGroups();
+    saveNow(); renderHome();
+    toast("导入完成：新增 " + added + " 个，更新 " + replaced + " 个" + (fileCount ? "，附件 " + fileCount + " 个" : ""));
+  };
+  r.readAsText(file);
+}
+
+/* ---------- 路由与视图 ---------- */
+function showHome(){ $("#view-home").hidden = false; $("#view-project").hidden = true; renderHome(); }
+function showProject(){ $("#view-home").hidden = true; $("#view-project").hidden = false; renderProject(); }
+function route(){
+  const h = location.hash || "";
+  const m = h.match(/^#\/p\/([^\/]+)(?:\/(\d+))?/);
+  if(m){
+    const p = getProject(m[1]);
+    if(!p){ history.replaceState(null,"","#/"); showHome(); return; }
+    curId = p.id;
+    curStep = clamp(parseInt(m[2] || p.currentStep || 1, 10) || 1, 1, 10);
+    p.currentStep = curStep;
+    showProject();
+  } else {
+    curId = null;
+    showHome();
+  }
+}
+
+/* ---------- 事件绑定 ---------- */
+function bind(){
+  $("#btnNew").onclick = () => editProjectDialog(null);
+  $("#btnBackup").onclick = () => exportDialog(null);
+  $("#btnImport").onclick = () => $("#fileImport").click();
+  $("#fileImport").onchange = e => { const f = e.target.files[0]; if(f) importFile(f); e.target.value = ""; };
+  $("#q").addEventListener("input", e => { query = e.target.value.trim(); renderHome(); });
+  $("#sortSel").value = sortBy;
+  $("#sortSel").onchange = e => { sortBy = e.target.value; state.settings.sort = sortBy; saveNow(); renderHome(); };
+  document.querySelectorAll("#tabs .tab").forEach(t => t.onclick = () => {
+    document.querySelectorAll("#tabs .tab").forEach(x => x.classList.remove("active"));
+    t.classList.add("active"); filter = t.dataset.filter; renderHome();
+  });
+  $("#btnBack").onclick = () => { location.hash = "#/"; };
+  $("#btnNewGroup").onclick = () => newGroupDialog();
+  document.querySelectorAll("#viewTabs button").forEach(b => b.onclick = () => setPane(b.dataset.v));
+  $("#btnPick").onclick = () => $("#filePick").click();
+  $("#filePick").onchange = e => { addFiles(e.target.files); e.target.value = ""; };
+  const drop = $("#drop");
+  drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+  drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+  drop.addEventListener("drop", e => {
+    e.preventDefault(); drop.classList.remove("over");
+    if(e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  });
+  document.addEventListener("paste", e => {
+    if(!curId || $("#paneFlow").hidden) return;
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    const picked = [];
+    for(const it of items){ if(it.kind === "file"){ const f = it.getAsFile(); if(f) picked.push(f); } }
+    if(picked.length){ e.preventDefault(); addFiles(picked); }
+  });
+  $("#btnCopy").onclick = () => {
+    const t = $("#stPrompt").textContent;
+    const hint = $("#resultHint");
+    const done = () => { hint.textContent = "提示词已复制 ✓"; setTimeout(()=>hint.textContent = "输入即自动保存", 1600); };
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, () => fallbackCopy(t, done));
+    else fallbackCopy(t, done);
+  };
+  function fallbackCopy(text, cb){
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); cb(); } catch(e){ toast("复制失败，请手动选中复制"); }
+    ta.remove();
+  }
+  $("#resultBox").addEventListener("input", e => {
+    const p = getProject(curId); if(!p) return;
+    p.steps[curStep-1].content = e.target.value;
+    p.updatedAt = new Date().toISOString();
+    scheduleSave();
+  });
+  $("#notesBox").addEventListener("input", e => {
+    const p = getProject(curId); if(!p) return;
+    p.notes = e.target.value;
+    p.updatedAt = new Date().toISOString();
+    scheduleSave();
+  });
+  $("#btnMark").onclick = () => {
+    const p = getProject(curId); if(!p) return;
+    const s = p.steps[curStep-1];
+    s.done = !s.done;
+    if(s.done && doneCount(p) === 10) p.status = "done";
+    else if(!s.done && p.status === "done") p.status = "active";
+    if(s.done && curStep < 10 && !p.steps[curStep].done) p.currentStep = curStep + 1;
+    p.updatedAt = new Date().toISOString();
+    saveNow();
+    if(s.done && curStep < 10){ setStep(curStep + 1); } else { renderProject(); }
+  };
+  $("#btnClearStep").onclick = () => {
+    const p = getProject(curId); if(!p) return;
+    if(!p.steps[curStep-1].content){ toast("这一步本来就是空的"); return; }
+    openDialog({ title:"清空这一步", sub:"只清空第 " + curStep + " 步「" + STEPS[curStep-1].title + "」的成果内容。", okText:"清空", danger:true,
+      onOk: () => { const old = p.steps[curStep-1].content; p.steps[curStep-1].content = ""; saveNow(); renderProject();
+        toast("已清空本步内容", { label:"撤销", run:() => { p.steps[curStep-1].content = old; saveNow(); renderProject(); } }); } });
+  };
+  $("#btnPrev").onclick = () => setStep(curStep - 1);
+  $("#btnNext").onclick = () => setStep(curStep + 1);
+  document.addEventListener("keydown", e => {
+    if(e.key === "Escape" && !document.querySelector(".backdrop")){ if(curId) location.hash = "#/"; return; }
+    if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s"){
+      e.preventDefault();
+      if(curId){ saveNow(); toast("已保存"); }
+    }
+  });
+  window.addEventListener("hashchange", route);
+  window.addEventListener("beforeunload", () => { if(saveTimer) saveNow(); });
+  document.addEventListener("visibilitychange", () => { if(document.hidden && saveTimer) saveNow(); });
+  window.addEventListener("storage", e => {
+    if(e.key !== KEY) return;
+    try {
+      const o = JSON.parse(e.newValue);
+      if(o && Array.isArray(o.projects)){
+        state = { version:2, projects:o.projects.map(normalize), settings:o.settings||{} };
+        if(curId && !getProject(curId)){ location.hash = "#/"; }
+        else if(curId) renderProject(); else renderHome();
+        toast("另一个标签页也改动了数据，已同步");
+      }
+    } catch(err){}
+  });
+}
+
+/* ---------- 启动 ---------- */
+const migrated = load();
+bind();
+route();
+gcFiles();
+if(migrated){
+  renderHome();
+  setTimeout(() => {
+    toast("已把旧版本的数据导入成 " + migrated + " 个项目，建议先点右上角「导出全部备份」存一份。");
+  }, 1200);
+}
+window.__app = { get state(){ return state; }, seedDemo, renderHome, renderProject, renderDoc, setPane, route,
+  mdFor, htmlFor, txtFor, docPlain, packState, migrateLegacy, saveNow, ensureGroups, newGroupDialog,
+  addFiles, removeFile, deleteProject, exportDialog, importFile, STEPS, openProject, setStep, fmtSize, normalize };
 </script>
 </body>
 </html>
