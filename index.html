@@ -491,6 +491,79 @@ function fillPrompt(text, p){
     .replace(/\{R\}/g, rolesBlock(p));
 }
 
+/* ============================================================
+   目标深度：同一个十步骨架，两套目标函数
+   master = 练到能用（训练管线）　learn = 知道得像内行（判读管线）
+   ============================================================ */
+const DEPTHS = {
+  learn:  { label:"了解 · 知道得像内行（2-4 小时）" },
+  master: { label:"掌握 · 练到能上手（20 小时以上）" }
+};
+
+const LEARN_DEFS = [
+  { title:"多视角快照",
+    purpose:"用几个互不重叠的位置快速看一遍，先建立「这事有好几种说法」的直觉。",
+    guide:["每个位置只说 3 句话，不展开。","必须有一个位置唱反调。","这一步求快求全，不求深。"],
+    prompt:"我想快速了解【{T}】。请从下面这 5 个位置各说 3 句话（不要写成文章）：\n{R}\n\n每段只回答三件事：① 在他看来这是什么；② 他最在意什么；③ 他觉得外行最容易误解什么。\n\n最后用一句话说：这五个位置里，谁最可能说服我？为什么。" },
+
+  { title:"共识与分歧",
+    purpose:"把听到的说法分成「共识 / 口味分歧 / 事实争议」，避免把评论当结论。",
+    guide:["共识可以当地基。","口味分歧没有对错，写清各自要什么。","事实争议必须注明怎么验证。"],
+    prompt:"基于上面的快照，把关于【{T}】的说法分成三类：\n1）共识：多数位置都同意、可以当基础的说法；\n2）口味或立场分歧：没有对错，只是偏好或目的不同——分别写清「喜欢的人在意什么」和「不喜欢的人在意什么」；\n3）事实争议：有对错、可以查证——每条注明怎么验证。\n\n最后指出：外行最容易被误导的一点是什么？" },
+
+  { title:"结构地图",
+    purpose:"知道它由哪几块组成、怎么挂在一起、从哪看起最省力。",
+    guide:["4-6 个部分，每部分一句话。","说清部分之间的关系。","标明哪块可以暂时跳过。"],
+    prompt:"请给【{T}】画一张结构地图：\n1）它由哪 4-6 个部分组成，每部分一句话说明；\n2）这些部分之间是什么关系（先后 / 并列 / 依赖 / 对立）；\n3）如果要入门，从哪一块看起最省力，哪一块可以暂时跳过；\n4）如果只记住其中一块，应该记哪一块。\n用层级列表输出，不要写成文章。" },
+
+  { title:"常见误解",
+    purpose:"先把坑标出来，比先学正确知识更省时间。",
+    guide:["用「很多人以为 A，其实是 B」的格式。","标出代价最大的那条。","误解往往是入门的最佳入口。"],
+    prompt:"关于【{T}】，列出 5 个最常见的误解，每条按这个格式写：「很多人以为 A，其实是 B，所以会 C」。\n最后指出：哪一条误解的代价最大（会让人白花钱、白花时间、或者判断错人），为什么。" },
+
+  { title:"锚点清单",
+    purpose:"记住 8-12 个关键坐标，之后听到任何相关内容都能挂上去。",
+    guide:["人物、作品、事件、术语都算。","每个一句话说清为什么重要。","把常被搞混的两个专门区分。"],
+    prompt:"我想记住【{T}】的关键坐标。请给出 8-12 个锚点（必知的人物 / 作品 / 事件 / 术语），每个一句话说明它为什么重要，并标注它属于结构地图的哪一部分。\n如果其中有两个经常被搞混，专门用一段说明区别。" },
+
+  { title:"最小入门路径",
+    purpose:"2 小时内走完一条最短路径，先建立「我懂一点了」的实感。",
+    guide:["总共不超过 2 小时。","每一步要有具体资源。","优先能立刻用上的内容。"],
+    prompt:"假设我只有 2 小时，想对【{T}】知道得像个内行。请给一条 3 步路径：\n每一步写清：做什么、花多久、用什么资源（1-2 个具体的）、做完能获得什么。\n路径要能在 2 小时内走完，优先「能立刻用上」的内容，不要追求全面。" },
+
+  { title:"马上能用的 3 个点",
+    purpose:"把「知道」变成「能用」——这一步是了解线的地基。",
+    guide:["具体到什么场合、说什么话。","每点配一个常见错误做法。","不要写原理，写动作。"],
+    prompt:"我明天就可能用到【{T}】。请给出 3 个「立刻能用」的点，每个写清：\n① 什么场合用；\n② 具体说什么、做什么（要能直接照着做）；\n③ 常见错误做法是什么。\n不要写原理，写动作。" },
+
+  { title:"待解的 3 个问题",
+    purpose:"知道自己还不知道什么，比假装懂更重要。",
+    guide:["每个问题说清为什么重要。","给出答案在哪里找。","给一个「我明白了」的信号。"],
+    prompt:"我现在对【{T}】有了基本轮廓。请给出 3 个「如果要继续，最该先搞清楚」的问题。\n每个说明：① 为什么它重要；② 答案大概在哪里找；③ 什么信号说明我已经弄明白了。" },
+
+  { title:"说给人听（30 秒 / 2 分钟 / 5 分钟）",
+    purpose:"在饭桌上、朋友问起时，用 30 秒讲得又准又让人想听下去。",
+    guide:["开场不要用定义，用钩子。","必须有一个只有内行才知道的细节。","诚实说出争议，比下结论更像内行。"],
+    prompt:"我已经对【{T}】有了基本了解。现在我要能「说给人听」，而且要说得好听、让人觉得我懂行。请给我三套稿子，像人说话，不要写成文章：\n\n【30 秒版】朋友随口问「你最近在看什么」时用：一句反常识的开场（不要用定义开头）+ 一个类比（把它放进对方已知的坐标里）+ 一个具体细节（数字、年份、制作内幕都行）。\n\n【2 分钟版】对方真的有兴趣时用：在 30 秒版基础上，加一个「只有内行才会提的细节」，和一个圈内真实的争论。\n\n【5 分钟版】对方追问时用，结构是：钩子 → 它解决什么问题 → 三个关键词 → 一个分歧 → 我怎么看 → 留个口子。\n\n另外还要给我：\n1）3 个「接话问题」，用来把话题递回去，别聊死；\n2）如果对方只回一句「哦」，我的第二发子弹是什么；\n3）一份「禁说清单」：这个主题上外行最爱说的 5 句空话（比如「神作」「必看」「太震撼了」），我要避开。" },
+
+  { title:"一页速查表",
+    purpose:"5 分钟能复习完的一张纸。",
+    guide:["一句话定义 + 5 个关键词。","3 个误解 + 3 个可用点。","留 2 个继续了解的方向。"],
+    prompt:"请给我做一份关于【{T}】的一页速查表：\n① 一句话定义；\n② 5 个关键词（每个一句解释）；\n③ 结构地图（用文字层级表示）；\n④ 3 个常见误解；\n⑤ 3 个能立刻用上的点；\n⑥ 2 个进一步了解的方向，各配一个资源。" }
+];
+
+function defsForDepth(depth){
+  return depth === "learn" ? LEARN_DEFS : STEPS;
+}
+function applyDepth(p, depth){
+  p.depth = (depth === "learn") ? "learn" : "master";
+  if(p.depth === "learn"){
+    p.defs = LEARN_DEFS.map(d => ({ title:d.title, purpose:d.purpose, guide:d.guide.slice(), prompt:d.prompt }));
+  } else {
+    p.defs = null;
+  }
+}
+
 const KEY = "tenx-learning-v2";
 const LABEL = { active:"进行中", paused:"已暂停", done:"已完成", idle:"未开始" };
 const ORDER = { idle:0, active:1, paused:2, done:3 };
@@ -524,7 +597,7 @@ function blankProject(name, topic, groupId){
   return { id:uid(), name:name||"未命名项目", topic:topic||"", tags:[], status:"idle",
     currentStep:1, steps:STEPS.map(()=>({content:"",done:false,files:[]})), notes:"",
     createdAt:now, updatedAt:now, pinned:false, archived:false, groupId: groupId || "",
-    roles:null, defs:null };
+    roles:null, defs:null, depth:"master" };
 }
 const doneCount = p => p.steps.filter(s=>s.done).length;
 const getProject = id => state.projects.find(p=>p.id===id);
@@ -550,6 +623,7 @@ function normalize(p){
   if(!LABEL[out.status]) out.status = "idle";
   out.pinned = !!p.pinned; out.archived = !!p.archived;
   out.groupId = typeof p.groupId === "string" ? p.groupId : "";
+  out.depth = (p.depth === "learn") ? "learn" : "master";
   out.roles = (Array.isArray(p.roles) && p.roles.length)
     ? p.roles.filter(r => r && r.name).map(r => ({
         name: String(r.name).slice(0,20),
@@ -1052,6 +1126,12 @@ function editProjectDialog(p, presetGroupId){
       '</select></div>' +
       '<div class="field"><label>标签（用逗号分隔，可留空）</label><input id="f-tags" placeholder="例如：音乐剧, 韦伯" value="'+esc(d.tags.join(", "))+'"></div>' +
       '<div style="border-top:1px solid var(--line);margin:18px 0 14px"></div>' +
+      '<div class="field"><label>目标深度（决定这十步要产出什么）</label>' +
+        '<select id="f-depth" class="select" style="width:100%;height:38px">' +
+          '<option value="learn">'+esc(DEPTHS.learn.label)+'</option>' +
+          '<option value="master">'+esc(DEPTHS.master.label)+'</option>' +
+        '</select>' +
+        '<div class="tip">了解＝地图、误解、能马上用、会说给人听；掌握＝阶梯、课表、测试、复述。换深度会整十步一起换，之后仍可逐步自定义。</div></div>' +
       '<div class="field"><label>题材类型（换一套预设的五个位置）</label>' + typeSelectHTML("f-type") + '</div>' +
       '<div style="font-size:12.5px;font-weight:600;color:var(--ink-2);margin:12px 0 8px">这次要用的 5 个位置</div>' +
       '<div id="f-roles">' + roleRowsHTML(curRoles) + '</div>' +
@@ -1062,25 +1142,34 @@ function editProjectDialog(p, presetGroupId){
       const gid = dlg.querySelector("#f-group").value;
       const tags = dlg.querySelector("#f-tags").value.split(/[,，]/).map(s=>s.trim()).filter(Boolean).slice(0,8);
       const roles = collectRoles(dlg.querySelector("#f-roles"));
+      const dselEl = dlg.querySelector("#f-depth");
+      const depth = dselEl ? dselEl.value : "master";
       if(!roles.length){ toast("至少要保留一个位置"); return false; }
       if(isNew){
         const np = blankProject(name, topic, gid);
         np.tags = tags;
         np.status = "active";
         np.roles = roles;
+        applyDepth(np, depth);
         state.projects.unshift(np);
         saveNow(); renderHome();
-        toast("已创建「"+name+"」，第 1 步已按这 5 个位置写好提示词");
+        toast("已创建「"+name+"」（"+ (depth === "learn" ? "了解线" : "掌握线") +"），第 1 步提示词已就绪");
         openProject(np.id);
       } else {
+        const changed = (depth !== (p.depth || "master"));
         p.name = name; p.topic = topic; p.tags = tags; p.groupId = gid; p.roles = roles;
+        if(changed) applyDepth(p, depth);
         p.updatedAt = new Date().toISOString();
         saveNow(); renderHome(); if(curId===p.id) renderProject();
-        toast("已保存");
+        toast(changed ? ("已切换到" + (depth === "learn" ? "了解线" : "掌握线") + "，十步定义已替换") : "已保存");
       }
     }
   });
   bindTypeSelect(document.querySelector("#f-type"), document.querySelector("#f-roles"));
+  const dsel = document.querySelector("#f-depth");
+  if(dsel){
+    dsel.value = (d.depth === "learn") ? "learn" : (isNew ? "learn" : "master");
+  }
 }
 
 /* 单独改五个位置 */
@@ -1230,7 +1319,9 @@ function renderProject(){
 
   $("#prName").textContent = p.name;
   $("#prTopic").textContent = p.topic ? ("学习主题：" + p.topic) : "（还没填学习主题，点右上角「编辑信息」补上，提示词会自动套用）";
-  $("#prTags").innerHTML = p.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join("") +
+  $("#prTags").innerHTML =
+    '<span class="tag" style="background:var(--brand-soft);color:var(--brand-d);font-weight:600">目标：' + (p.depth === "learn" ? "了解" : "掌握") + '</span>' +
+    p.tags.map(t=>'<span class="tag">'+esc(t)+'</span>').join("") +
     '<button class="tag" id="tagAdd" style="border:1px dashed var(--line-2);background:#fff;cursor:pointer">+ 标签</button>';
   $("#prDone").textContent = d;
   $("#prBar").style.width = (d*10) + "%";
