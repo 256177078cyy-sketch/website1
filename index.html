@@ -335,6 +335,7 @@ kbd{font:inherit;font-size:11.5px;background:var(--gray-soft);border:1px solid v
     <button class="pill idle" id="sbStatus" style="cursor:pointer;border:0"><i></i><span></span></button>
     <div class="spacer"></div>
     <span class="saved" id="saved"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4 10-11"/></svg><span>已自动保存</span></span>
+    <button class="btn btn-sm" id="btnRoles">五个位置</button>
     <button class="btn btn-sm" id="btnEditInfo">编辑信息</button>
     <button class="btn btn-sm" id="btnExportOne">导出</button>
   </div></header>
@@ -366,7 +367,10 @@ kbd{font:inherit;font-size:11.5px;background:var(--gray-soft);border:1px solid v
           <h3><span class="n" id="stNo">1</span><span id="stTitle"></span></h3>
           <p id="stPurpose"></p>
         </div>
-        <span class="pill idle" id="stState"><i></i><span></span></span>
+        <div style="display:flex;align-items:center;gap:8px;flex:none">
+          <button class="btn btn-sm btn-ghost" id="btnEditStep" title="改这一步的名称、说明和提示词">✎ 编辑这一步</button>
+          <span class="pill idle" id="stState"><i></i><span></span></span>
+        </div>
       </div>
       <ul class="guide" id="stGuide"></ul>
 
@@ -422,7 +426,7 @@ kbd{font:inherit;font-size:11.5px;background:var(--gray-soft);border:1px solid v
 
 /* ---------- 十步定义（内容与原版完全一致） ---------- */
 const STEPS = [
-  {id:1,title:"五视角调研",purpose:"把一个领域从实践者、学者、怀疑者、经济学家、历史学家的角度拆开，避免只听到最常见的观点。",guide:["每位专家都要给核心立场、最强证据、只有他会说的一件事。","这一步的目的不是找答案，而是把领域从不同方向撕开。","可以用 AI 分批生成，也可以让它一次性给五份解读。"],prompt:"我想研究【{T}】。请模拟 5 位不同的专家，从各自的视角分析这个主题：实践者、学者、怀疑者、经济学家、历史学家。每位专家请给出：1）两句话的核心立场；2）支持观点的最强证据；3）一件只有这个视角会提、其他视角不会提的事。"},
+  {id:1,title:"五视角调研",purpose:"从五个互不重叠的位置看同一个主题，避免只听到最常见的说法。位置可以在这个项目里换人。",guide:["每个位置都要给核心立场、最强证据、只有它会说的一件事。","这一步的目的不是找答案，而是把主题从不同方向撕开。","位置选得对不对，直接决定后面几步有没有东西可挖。"],prompt:"我想研究【{T}】。请分别从下面这 5 个位置来看它，每个位置都进入角色说话，不要写成百科条目：\n{R}\n\n每个位置请给出：1）两句话的核心立场；2）支持这个立场的最强证据、或最具体的例子；3）一件只有这个位置会提、其他位置不会提的事。\n\n最后单独列一段：上面哪些是事实，哪些是评价。"},
   {id:2,title:"矛盾图谱",purpose:"让五个视角互相质疑，找出冲突、共识和盲区，把研究从浅层信息推进到结构化理解。",guide:["重点找谁和谁冲突、依据是什么。","标记最强证据、最弱证据和可被化解的关键问题。","共识点更可靠，盲区点往往更有价值。"],prompt:"基于上一步的 5 个视角，请为【{T}】画一张矛盾图谱：1）哪些视角直接冲突，依据是什么；2）谁证据最强、谁证据最弱，为什么；3）哪个问题一旦有答案就能化解最大分歧；4）所有视角都同意的是哪一点；5）所有视角都没提到的是哪一点。"},
   {id:3,title:"综合简报",purpose:"把前面的多视角分析和矛盾图压成一份可以行动的调研简报。",guide:["一段话总结：给只有 60 秒的决策者听。","关键发现要按可信度排序，并标注支持与反对的视角。","最后一定要落到一条具体行动和一个前沿问题。"],prompt:"请把 5 个视角和矛盾图谱整合成一份关于【{T}】的调研简报：1）60 秒摘要；2）5 个关键发现，按可靠性排序，并标注支持与反对视角；3）一个只有跨视角才能看到的隐藏关联；4）一条具体行动建议；5）一个会改变整体理解的前沿问题。"},
   {id:4,title:"同行评审自检",purpose:"让 AI 对自己的简报挑刺，找出证据弱、视角失衡、需要补充信息的部分。",guide:["给关键发现逐个打分。","明确说出最没把握的结论和需要验证的信息。","检查是否需要补第 6 个视角。"],prompt:"请对关于【{T}】的调研简报做同行评审：给 5 个关键发现各打 1-10 分并解释理由；指出最没把握的结论、需要什么信息才能验证它；指出哪个视角占比过高；判断是否该加入第 6 个视角；最后给出一个专家视角的修改建议。"},
@@ -433,6 +437,59 @@ const STEPS = [
   {id:9,title:"费曼循环",purpose:"用自己的话讲清楚，把讲不明白的地方磨到简单、准确、完整。",guide:["先用 12 岁能懂的语言讲一遍。","再让我复述，找出含糊、跳步、绕不过去的地方。","循环到我能独立讲清，不进新内容。"],prompt:"我想用费曼学习法吃透【{T}】里的一个概念。请你当有耐心的学习伙伴：先用简单词和生活例子讲给我听，就当我 12 岁；然后让我用自己的话复述；再指出我复述里每一个含糊、跳步、绕不过去的地方，只重教这些部分；然后让我再讲一遍，循环到我的解释简单、准确、完整。在我讲清楚之前，不要进新内容。"},
   {id:10,title:"一页速查表",purpose:"把学过的内容压缩成能用 5 分钟复习的一页纸，方便随时调取。",guide:["一句大白话定义。","重要概念、规则、公式或步骤，全用短条目。","3-5 个真实场景例子和 5 个快问快答。"],prompt:"请给我做一份关于【{T}】的一页速查表：一句大白话定义；最重要的概念、规则、公式或步骤；3-5 个真实场景的例子；新手最容易犯的错和最容易混淆的地方；一份“上场前”检查清单；最后加 5 个快问快答。"}
 ];
+
+/* ============================================================
+   五个位置（"选人"）—— 每个位置是一个认知功能位，人按题材换。
+   同一套功能位，换个题材就换人，问出来的东西完全不同。
+   ============================================================ */
+const ROLE_PRESETS = {
+  research: { label:"研究型 · 一个领域或学问", roles:[
+    { name:"实践者", brief:"真做过这件事的人，讲门道和坑" },
+    { name:"学者", brief:"有框架和比较，能拿出证据" },
+    { name:"怀疑者", brief:"从根上质疑这件事值不值得做" },
+    { name:"算账的人", brief:"关心成本、收益、能不能持续" },
+    { name:"外部尺度", brief:"拿别的时代或领域做参照" }
+  ]},
+  work: { label:"作品型 · 音乐剧/小说/电影/游戏", roles:[
+    { name:"内行", brief:"演过或做过：演奏、演唱、舞美、制作" },
+    { name:"研究者", brief:"写过评论或研究，有比较视野" },
+    { name:"铁杆受众", brief:"看过很多遍，知道细节和版本差异" },
+    { name:"新手受众", brief:"第一次接触，怕看不懂、怕无聊" },
+    { name:"对手", brief:"从根上不喜欢它，能给出最强反驳" }
+  ]},
+  skill: { label:"技能型 · 学一门手艺或工具", roles:[
+    { name:"高手", brief:"已经在用，讲真正省时间的做法" },
+    { name:"教练", brief:"教过很多人，知道新手卡在哪" },
+    { name:"自学者", brief:"全靠自己摸索，踩过坑" },
+    { name:"放弃的人", brief:"学过又放下，说清是什么劝退了他" },
+    { name:"招人的人", brief:"关心你能不能真的用它干活" }
+  ]},
+  decide: { label:"决策型 · 要不要做某件事", roles:[
+    { name:"当事人", brief:"正在纠结，说清真正在怕什么" },
+    { name:"过来人", brief:"做过这个决定，讲事后真实感受" },
+    { name:"反对者", brief:"明确劝你不要做，理由最硬" },
+    { name:"承担代价的人", brief:"这个决定的成本会落到谁身上" },
+    { name:"长周期尺度", brief:"用五年十年的尺度看值不值" }
+  ]}
+};
+const ROLE_KEYS = Object.keys(ROLE_PRESETS);
+
+function rolesOf(p){
+  if(p && Array.isArray(p.roles) && p.roles.length) return p.roles;
+  return ROLE_PRESETS.research.roles;
+}
+function rolesBlock(p){
+  return rolesOf(p).map((r,i) => (i+1) + ". " + r.name + (r.brief ? "（" + r.brief + "）" : "")).join("\n");
+}
+/* 每一步的定义：项目里改过就用改过的，没改就用全局默认 */
+function getDefs(p){
+  return (p && Array.isArray(p.defs) && p.defs.length === 10) ? p.defs : STEPS;
+}
+function fillPrompt(text, p){
+  return String(text || "")
+    .replace(/\{T\}/g, topicOf(p))
+    .replace(/\{R\}/g, rolesBlock(p));
+}
 
 const KEY = "tenx-learning-v2";
 const LABEL = { active:"进行中", paused:"已暂停", done:"已完成", idle:"未开始" };
@@ -466,7 +523,8 @@ function blankProject(name, topic, groupId){
   const now = new Date().toISOString();
   return { id:uid(), name:name||"未命名项目", topic:topic||"", tags:[], status:"idle",
     currentStep:1, steps:STEPS.map(()=>({content:"",done:false,files:[]})), notes:"",
-    createdAt:now, updatedAt:now, pinned:false, archived:false, groupId: groupId || "" };
+    createdAt:now, updatedAt:now, pinned:false, archived:false, groupId: groupId || "",
+    roles:null, defs:null };
 }
 const doneCount = p => p.steps.filter(s=>s.done).length;
 const getProject = id => state.projects.find(p=>p.id===id);
@@ -492,6 +550,20 @@ function normalize(p){
   if(!LABEL[out.status]) out.status = "idle";
   out.pinned = !!p.pinned; out.archived = !!p.archived;
   out.groupId = typeof p.groupId === "string" ? p.groupId : "";
+  out.roles = (Array.isArray(p.roles) && p.roles.length)
+    ? p.roles.filter(r => r && r.name).map(r => ({
+        name: String(r.name).slice(0,20),
+        brief: String(r.brief || "").slice(0,60)
+      })).slice(0,6)
+    : null;
+  out.defs = (Array.isArray(p.defs) && p.defs.length === 10)
+    ? p.defs.map((d, i) => ({
+        title:   String(d.title   || STEPS[i].title).slice(0,24),
+        purpose: String(d.purpose || STEPS[i].purpose).slice(0,300),
+        guide:   Array.isArray(d.guide) ? d.guide.map(x => String(x)).slice(0,3) : STEPS[i].guide.slice(),
+        prompt:  String(d.prompt  || STEPS[i].prompt)
+      }))
+    : null;
   return out;
 }
 
@@ -922,42 +994,158 @@ function deleteProject(p){
 }
 
 /* ---------- 新建 / 编辑项目 ---------- */
+/* 五个位置的编辑小部件（新建项目、编辑项目、单独改位置，都用它） */
+function roleRowsHTML(roles){
+  const r = roles.slice();
+  while(r.length < 5) r.push({ name:"", brief:"" });
+  return r.map((x,i) =>
+    '<div style="display:flex;gap:6px;margin-bottom:7px">' +
+      '<input data-rn="'+i+'" value="'+esc(x.name||"")+'" placeholder="位置 '+(i+1)+'" style="flex:0 0 33%">' +
+      '<input data-rb="'+i+'" value="'+esc(x.brief||"")+'" placeholder="他会关注什么、会跟谁吵" style="flex:1">' +
+    '</div>').join("");
+}
+function collectRoles(root){
+  const out = [];
+  root.querySelectorAll("[data-rn]").forEach(inp => {
+    const i = inp.dataset.rn;
+    const name = inp.value.trim();
+    if(!name) return;
+    const b = root.querySelector('[data-rb="'+i+'"]');
+    out.push({ name: name.slice(0,20), brief: (b ? b.value : "").trim().slice(0,60) });
+  });
+  return out;
+}
+function typeSelectHTML(id){
+  return '<select id="'+id+'" class="select" style="width:100%;height:38px">' +
+    '<option value="">（保持当前 5 个位置）</option>' +
+    ROLE_KEYS.map(k => '<option value="'+k+'">'+esc(ROLE_PRESETS[k].label)+'</option>').join("") +
+  '</select>';
+}
+function bindTypeSelect(sel, root){
+  if(!sel) return;
+  sel.onchange = () => {
+    if(!sel.value) return;
+    const preset = ROLE_PRESETS[sel.value].roles;
+    root.querySelectorAll("[data-rn]").forEach(inp => {
+      const i = +inp.dataset.rn;
+      inp.value = (preset[i] || {}).name || "";
+      const b = root.querySelector('[data-rb="'+i+'"]');
+      if(b) b.value = (preset[i] || {}).brief || "";
+    });
+    toast("已换成「" + ROLE_PRESETS[sel.value].label + "」的五个位置，可以直接改");
+  };
+}
+
 function editProjectDialog(p, presetGroupId){
   const isNew = !p;
   const d = p || { name:"", topic:"", tags:[], groupId: presetGroupId || (state.groups[0]||{}).id || "" };
+  const curRoles = rolesOf(d);
   openDialog({
     title: isNew ? "新建学习项目" : "编辑项目信息",
-    sub: isNew ? "给这次要研究或学习的主题起个名字，之后可以随时改。" : null,
+    sub: isNew ? "先想清楚两件事：这次要研究什么，以及由哪 5 个人来辩论。" : null,
     okText: isNew ? "创建" : "保存",
     body:
-      '<div class="field"><label>项目名</label><input id="f-name" placeholder="例如：用 RAG 构建知识库" value="'+esc(d.name)+'"></div>' +
-      '<div class="field"><label>学习主题（会填进十步的提示词里）</label><input id="f-topic" placeholder="例如：检索增强生成" value="'+esc(d.topic)+'">' +
-      '<div class="tip">十步的提示词里都有【主题】占位，这里填的词会替换进去。</div></div>' +
+      '<div class="field"><label>项目名</label><input id="f-name" placeholder="例如：歌剧魅影" value="'+esc(d.name)+'"></div>' +
+      '<div class="field"><label>学习主题（会填进十步的提示词里）</label><input id="f-topic" placeholder="例如：歌剧魅影" value="'+esc(d.topic)+'"></div>' +
       '<div class="field"><label>分类</label><select id="f-group" class="select" style="width:100%;height:38px">' +
         state.groups.map(g=>'<option value="'+g.id+'"'+(g.id===d.groupId?" selected":"")+'>'+esc(g.name)+'</option>').join("") +
       '</select></div>' +
-      '<div class="field"><label>标签（用逗号分隔，可留空）</label><input id="f-tags" placeholder="例如：AI, 检索, 工程" value="'+esc(d.tags.join(", "))+'"></div>',
+      '<div class="field"><label>标签（用逗号分隔，可留空）</label><input id="f-tags" placeholder="例如：音乐剧, 韦伯" value="'+esc(d.tags.join(", "))+'"></div>' +
+      '<div style="border-top:1px solid var(--line);margin:18px 0 14px"></div>' +
+      '<div class="field"><label>题材类型（换一套预设的五个位置）</label>' + typeSelectHTML("f-type") + '</div>' +
+      '<div style="font-size:12.5px;font-weight:600;color:var(--ink-2);margin:12px 0 8px">这次要用的 5 个位置</div>' +
+      '<div id="f-roles">' + roleRowsHTML(curRoles) + '</div>' +
+      '<div class="tip" style="font-size:11.5px;color:var(--muted)">检验标准：这 5 个人真的会吵起来吗？至少要有一个人唱反调、一个人说人话。</div>',
     onOk: (back, dlg) => {
       const name = dlg.querySelector("#f-name").value.trim() || "未命名项目";
       const topic = dlg.querySelector("#f-topic").value.trim();
       const gid = dlg.querySelector("#f-group").value;
       const tags = dlg.querySelector("#f-tags").value.split(/[,，]/).map(s=>s.trim()).filter(Boolean).slice(0,8);
+      const roles = collectRoles(dlg.querySelector("#f-roles"));
+      if(!roles.length){ toast("至少要保留一个位置"); return false; }
       if(isNew){
         const np = blankProject(name, topic, gid);
         np.tags = tags;
         np.status = "active";
+        np.roles = roles;
         state.projects.unshift(np);
         saveNow(); renderHome();
-        toast("已创建「"+name+"」，开始第 1 步");
+        toast("已创建「"+name+"」，第 1 步已按这 5 个位置写好提示词");
         openProject(np.id);
       } else {
-        p.name = name; p.topic = topic; p.tags = tags; p.groupId = gid;
+        p.name = name; p.topic = topic; p.tags = tags; p.groupId = gid; p.roles = roles;
         p.updatedAt = new Date().toISOString();
         saveNow(); renderHome(); if(curId===p.id) renderProject();
         toast("已保存");
       }
     }
   });
+  bindTypeSelect(document.querySelector("#f-type"), document.querySelector("#f-roles"));
+}
+
+/* 单独改五个位置 */
+function rolesDialog(p){
+  openDialog({
+    title:"这次用哪 5 个位置",
+    sub:"第 1 步的五视角、第 2 步的对照、总文档，都会按这些位置来写。",
+    okText:"保存",
+    body:
+      '<div class="field"><label>换一套预设（会覆盖下面 5 行）</label>' + typeSelectHTML("r-type") + '</div>' +
+      '<div id="r-roles">' + roleRowsHTML(rolesOf(p)) + '</div>' +
+      '<div class="tip" style="font-size:11.5px;color:var(--muted)">检验标准：这 5 个人真的会吵起来吗？至少要有一个人唱反调、一个人说人话。</div>',
+    onOk:(back, dlg) => {
+      const roles = collectRoles(dlg.querySelector("#r-roles"));
+      if(!roles.length){ toast("至少要保留一个位置"); return false; }
+      p.roles = roles;
+      p.updatedAt = new Date().toISOString();
+      saveNow(); renderProject();
+      toast("五个位置已更新，提示词跟着变了");
+    }
+  });
+  bindTypeSelect(document.querySelector("#r-type"), document.querySelector("#r-roles"));
+}
+
+/* 编辑某一步的名称 / 说明 / 提示词 */
+function editStepDialog(p){
+  const def = getDefs(p)[curStep-1];
+  openDialog({
+    title:"编辑第 " + curStep + " 步",
+    sub:"只改这个项目，不影响别的项目。提示词里可以用 {T}（主题）和 {R}（五个位置）。",
+    okText:"保存",
+    body:
+      '<div class="field"><label>步骤名称</label><input id="s-title" value="'+esc(def.title)+'"></div>' +
+      '<div class="field"><label>这一步要做什么</label><textarea id="s-purpose" rows="2">'+esc(def.purpose)+'</textarea></div>' +
+      '<div class="field"><label>要点（每行一条，最多 3 条）</label><textarea id="s-guide" rows="3">'+esc(def.guide.join("\n"))+'</textarea></div>' +
+      '<div class="field"><label>提示词</label><textarea id="s-prompt" rows="8">'+esc(def.prompt)+'</textarea>' +
+        '<div class="tip">用 {T} 代表学习主题，{R} 代表五个位置（会自动展开成 5 条）。</div></div>' +
+      '<div><button type="button" class="btn btn-sm" id="s-reset">恢复这一步的默认内容</button></div>',
+    onOk:(back, dlg) => {
+      const title = dlg.querySelector("#s-title").value.trim();
+      const prompt = dlg.querySelector("#s-prompt").value.trim();
+      if(!title || !prompt){ toast("名称和提示词不能为空"); return false; }
+      if(!Array.isArray(p.defs) || p.defs.length !== 10){
+        p.defs = getDefs(p).map(x => ({ title:x.title, purpose:x.purpose, guide:x.guide.slice(), prompt:x.prompt }));
+      }
+      p.defs[curStep-1] = {
+        title: title.slice(0,24),
+        purpose: dlg.querySelector("#s-purpose").value.trim().slice(0,300),
+        guide: dlg.querySelector("#s-guide").value.split("\n").map(x=>x.trim()).filter(Boolean).slice(0,3),
+        prompt: prompt
+      };
+      p.updatedAt = new Date().toISOString();
+      saveNow(); renderProject();
+      toast("第 " + curStep + " 步已改好");
+    }
+  });
+  const reset = document.querySelector("#s-reset");
+  if(reset) reset.onclick = () => {
+    const d = STEPS[curStep-1];
+    document.querySelector("#s-title").value = d.title;
+    document.querySelector("#s-purpose").value = d.purpose;
+    document.querySelector("#s-guide").value = d.guide.join("\n");
+    document.querySelector("#s-prompt").value = d.prompt;
+    toast("已填回默认内容，记得点保存");
+  };
 }
 
 /* ---------- 示例项目 ---------- */
@@ -1036,6 +1224,8 @@ function renderProject(){
     })));
   };
   $("#btnEditInfo").onclick = () => editProjectDialog(p);
+  $("#btnRoles").onclick = () => rolesDialog(p);
+  $("#btnEditStep").onclick = () => editStepDialog(p);
   $("#btnExportOne").onclick = () => exportDialog(p);
 
   $("#prName").textContent = p.name;
@@ -1051,20 +1241,22 @@ function renderProject(){
     if(v && v.trim()){ p.tags = p.tags.concat(v.trim().split(/[,，]/).map(s=>s.trim()).filter(Boolean)).slice(0,8); saveNow(); renderProject(); }
   };
 
-  $("#stepsNav").innerHTML = STEPS.map(s => {
-    const cls = p.steps[s.id-1].done ? "done" : (s.id === curStep ? "current" : "");
-    return '<button class="chip '+cls+'" data-step="'+s.id+'"><span class="n">'+s.id+'</span>'+s.title+'</button>';
+  const defs = getDefs(p);
+  $("#stepsNav").innerHTML = defs.map((s,i) => {
+    const id = i + 1;
+    const cls = p.steps[i].done ? "done" : (id === curStep ? "current" : "");
+    return '<button class="chip '+cls+'" data-step="'+id+'" title="'+esc(s.title)+'"><span class="n">'+id+'</span>'+esc(s.title)+'</button>';
   }).join("");
   $("#stepsNav").querySelectorAll("[data-step]").forEach(c => {
     c.onclick = () => setStep(parseInt(c.dataset.step,10));
   });
 
-  const s = STEPS[curStep-1];
-  $("#stNo").textContent = s.id;
+  const s = defs[curStep-1];
+  $("#stNo").textContent = curStep;
   $("#stTitle").textContent = s.title;
   $("#stPurpose").textContent = s.purpose;
   $("#stGuide").innerHTML = s.guide.map(g=>"<li>"+esc(g)+"</li>").join("");
-  $("#stPrompt").textContent = s.prompt.replace("{T}", p.topic || "主题");
+  $("#stPrompt").textContent = fillPrompt(s.prompt, p);
   const rb = $("#resultBox");
   rb.value = p.steps[curStep-1].content || "";
   const stEl = $("#stState");
@@ -1322,16 +1514,17 @@ function renderDoc(){
   const p = getProject(curId); if(!p) return;
   const d = doneCount(p);
   const g = getGroup(p.groupId);
-  const toc = STEPS.map(s => '<div>' + (p.steps[s.id-1].done ? "✓ " : "") +
-    '<a href="#dstep'+s.id+'">' + s.id + '. ' + esc(s.title) + '</a></div>').join("");
-  const blocks = STEPS.map(s => {
-    const c = p.steps[s.id-1];
+  const defs = getDefs(p);
+  const toc = defs.map((s,i) => '<div>' + (p.steps[i].done ? "✓ " : "") +
+    '<a href="#dstep'+(i+1)+'">' + (i+1) + '. ' + esc(s.title) + '</a></div>').join("");
+  const blocks = defs.map((s,i) => {
+    const c = p.steps[i];
     const files = c.files || [];
-    return '<section class="dstep" id="dstep'+s.id+'">' +
-      '<h2><span class="n">'+s.id+'</span>'+esc(s.title) +
+    return '<section class="dstep" id="dstep'+(i+1)+'">' +
+      '<h2><span class="n">'+(i+1)+'</span>'+esc(s.title) +
         (c.done ? ' <span class="pill done"><i></i>已完成</span>' : '') + '</h2>' +
       '<p class="purpose">'+esc(s.purpose)+'</p>' +
-      '<h4>提示词</h4><div class="pre">'+esc(s.prompt.replace("{T}", topicOf(p)))+'</div>' +
+      '<h4>提示词</h4><div class="pre">'+esc(fillPrompt(s.prompt, p))+'</div>' +
       '<h4>我的成果</h4>' + (c.content && c.content.trim()
         ? '<div class="res">'+esc(c.content)+'</div>'
         : '<div class="res empty">（这一步还没有填写）</div>') +
@@ -1367,11 +1560,13 @@ function docPlain(p){
   const d = doneCount(p);
   let out = p.name + "\n" + "=".repeat(Math.max(4, p.name.length*2)) + "\n";
   out += "学习主题：" + (p.topic||"—") + "　状态：" + LABEL[p.status] + "　已完成 " + d + "/10 步\n\n";
-  out += "目录\n" + STEPS.map(s => "  " + s.id + ". " + s.title + (p.steps[s.id-1].done ? " ✓" : "")).join("\n") + "\n\n";
-  STEPS.forEach(s => {
-    const c = p.steps[s.id-1];
-    out += "\n" + "─".repeat(46) + "\n第 " + s.id + " 步 · " + s.title + (c.done ? "（已完成）" : "") + "\n";
-    out += "说明：" + s.purpose + "\n\n【提示词】\n" + s.prompt.replace("{T}", topicOf(p)) + "\n\n【我的成果】\n";
+  const defs = getDefs(p);
+  out += "这次用的五个位置\n" + rolesOf(p).map((r,i) => "  " + (i+1) + ". " + r.name + (r.brief ? "（" + r.brief + "）" : "")).join("\n") + "\n\n";
+  out += "目录\n" + defs.map((s,i) => "  " + (i+1) + ". " + s.title + (p.steps[i].done ? " ✓" : "")).join("\n") + "\n\n";
+  defs.forEach((s,i) => {
+    const c = p.steps[i];
+    out += "\n" + "─".repeat(46) + "\n第 " + (i+1) + " 步 · " + s.title + (c.done ? "（已完成）" : "") + "\n";
+    out += "说明：" + s.purpose + "\n\n【提示词】\n" + fillPrompt(s.prompt, p) + "\n\n【我的成果】\n";
     out += (c.content && c.content.trim() ? c.content : "（还没填）") + "\n";
     const files = (c.files||[]);
     if(files.length) out += "\n【附件】" + files.map(f => f.name + "（" + fmtSize(f.size) + "）").join("、") + "\n";
@@ -1404,17 +1599,18 @@ function mdFor(p){
   out += "- 进度：已完成 " + d + " / 10 步\n";
   out += "- 创建时间：" + String(p.createdAt).slice(0,10) + "\n";
   out += "- 最后编辑：" + String(p.updatedAt).slice(0,10) + "\n\n";
+  out += "## 这次用的五个位置\n\n" + rolesOf(p).map((r,i) => (i+1) + ". " + r.name + (r.brief ? "（" + r.brief + "）" : "")).join("\n") + "\n\n";
   out += "## 目录\n\n";
-  STEPS.forEach(s => {
-    const done = p.steps[s.id-1].done ? " ✅" : "";
-    out += (s.id) + ". " + s.title + done + "\n";
+  const defs = getDefs(p);
+  defs.forEach((s,i) => {
+    out += (i+1) + ". " + s.title + (p.steps[i].done ? " ✅" : "") + "\n";
   });
   out += "\n---\n\n";
-  STEPS.forEach(s => {
-    const c = p.steps[s.id-1];
-    out += "## " + s.id + ". " + s.title + (c.done ? "（已完成）" : "") + "\n\n";
+  defs.forEach((s,i) => {
+    const c = p.steps[i];
+    out += "## " + (i+1) + ". " + s.title + (c.done ? "（已完成）" : "") + "\n\n";
     out += "> " + s.purpose + "\n\n";
-    out += "**提示词**\n\n```\n" + s.prompt.replace("{T}", topicOf(p)) + "\n```\n\n";
+    out += "**提示词**\n\n```\n" + fillPrompt(s.prompt, p) + "\n```\n\n";
     out += "**我的成果**\n\n" + (c.content && c.content.trim() ? c.content : "_（还没填）_") + "\n\n";
     const fl = (c.files || []);
     if(fl.length) out += "**附件**：" + fl.map(f => f.name + "（" + fmtSize(f.size) + "）").join("、") + "\n\n";
@@ -1426,11 +1622,12 @@ function txtFor(p){
   const d = doneCount(p);
   let out = p.name + "\n" + "=".repeat(Math.max(4, p.name.length*2)) + "\n\n";
   out += "学习主题：" + (p.topic || "—") + "　状态：" + LABEL[p.status] + "　进度：" + d + "/10\n\n";
-  STEPS.forEach(s => {
-    const c = p.steps[s.id-1];
-    out += "\n【第 " + s.id + " 步】" + s.title + (c.done ? "（已完成）" : "") + "\n";
+  out += "这次用的五个位置：" + rolesOf(p).map((r,i) => (i+1) + ". " + r.name).join("　") + "\n\n";
+  getDefs(p).forEach((s,i) => {
+    const c = p.steps[i];
+    out += "\n【第 " + (i+1) + " 步】" + s.title + (c.done ? "（已完成）" : "") + "\n";
     out += "说明：" + s.purpose + "\n";
-    out += "提示词：\n" + s.prompt.replace("{T}", topicOf(p)) + "\n";
+    out += "提示词：\n" + fillPrompt(s.prompt, p) + "\n";
     out += "我的成果：\n" + (c.content && c.content.trim() ? c.content : "（还没填）") + "\n";
     const fl2 = (c.files || []);
     if(fl2.length) out += "附件：" + fl2.map(f => f.name + "（" + fmtSize(f.size) + "）").join("、") + "\n";
@@ -1441,11 +1638,11 @@ function txtFor(p){
 }
 function htmlFor(p){
   const d = doneCount(p);
-  const blocks = STEPS.map(s => {
-    const c = p.steps[s.id-1];
-    return '<section><h2>' + s.id + '. ' + esc(s.title) + (c.done ? ' <span class="tag">已完成</span>' : '') + '</h2>' +
+  const blocks = getDefs(p).map((s,i) => {
+    const c = p.steps[i];
+    return '<section><h2>' + (i+1) + '. ' + esc(s.title) + (c.done ? ' <span class="tag">已完成</span>' : '') + '</h2>' +
       '<p class="purpose">' + esc(s.purpose) + '</p>' +
-      '<h3>提示词</h3><pre>' + esc(s.prompt.replace("{T}", topicOf(p))) + '</pre>' +
+      '<h3>提示词</h3><pre>' + esc(fillPrompt(s.prompt, p)) + '</pre>' +
       '<h3>我的成果</h3><div class="res">' + (c.content && c.content.trim() ? esc(c.content) : '<em>（还没填）</em>') + '</div>' +
       ((c.files||[]).length ? '<h3>附件</h3><ul class="flist">' + (c.files||[]).map(f => '<li>' + esc(f.name) + '（' + fmtSize(f.size) + '）</li>').join("") + '</ul>' : '') +
       '</section>';
